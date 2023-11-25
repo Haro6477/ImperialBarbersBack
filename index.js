@@ -4,28 +4,21 @@ const mysql = require("mysql");
 const cors = require("cors");
 const multer = require('multer')
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs');
+const { PORT, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = require("./config");
 
 app.use(cors({ credentials: true, origin: ['http://localhost:5173', 'http://192.168.1.120:5173', 'http://192.168.1.78:5173', 'http://192.168.1.67:5173', 'http://192.168.1.71:5173'] }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dbimages')))
 
-// Conexión local
+// Conexión db
 const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "22580",
-    database: "db_kingBarberApp"
+    host: DB_HOST,
+    user: DB_USER,
+    password: DB_PASSWORD,
+    database: DB_NAME,
+    port: DB_PORT
 });
-
-// Conexión hosting
-// const db = mysql.createConnection({
-//     host: "localhost",
-//     user: "adrianvi_kb_admin",
-//     password: "Oneway64.77",
-//     database: "adrianvi_db_kingbarberapp"
-// });
-
 
 // Función para autenticación
 app.get("/auth/:user/:pass", (req, res) => {
@@ -189,7 +182,8 @@ app.get("/servicios-semana/:id", (req, res) => {
             }
         })
 })
-app.get("/productos-semana-all", (req, res) => {
+app.get("/productos-semana-all/:id", (req, res) => {
+    const id = req.params.id
     var lunes = new Date();
     var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
     lunes.setDate(lunes.getDate() - nDay);
@@ -198,7 +192,7 @@ app.get("/productos-semana-all", (req, res) => {
         + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
         + ' INNER JOIN empleados AS e ON dp.idBarber = e.id'
         + ' INNER JOIN productos AS p ON dp.idProducto = p.id'
-        + " WHERE fecha < '" + formatearFecha(lunes) + "' AND c.idCliente != '122'"
+        + " WHERE fecha < '" + formatearFecha(lunes) + "' AND c.idCliente != '122' AND dp.idBarber = " + id
         + ' order by fecha desc'
     db.query(expresion,
         (err, rows) => {
@@ -965,6 +959,6 @@ app.put("/registrar-salida", (req, res) => {
 });
 
 
-app.listen(3001, () => {
-    console.log("Corriendo en el puerto 3001")
+app.listen(PORT, () => {
+    console.log("Corriendo en el puerto " + PORT)
 })
