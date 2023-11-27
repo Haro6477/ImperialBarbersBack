@@ -23,7 +23,7 @@ const db = mysql.createConnection({
 // Función para autenticación
 app.get("/auth/:user/:pass", (req, res) => {
     const usuario = req.params.user
-    const pass = req.params.pass
+    const pass = req.params.passnpm
 
     db.query('SELECT id FROM empleados WHERE usuario=? AND pass=?', [usuario, pass],
         (err, result) => {
