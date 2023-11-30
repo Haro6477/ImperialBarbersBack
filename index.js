@@ -922,7 +922,7 @@ app.put("/iniciar-descanso", (req, res) => {
     const idBarber = req.body.idBarber
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
     const dia = (new Date).toLocaleDateString('es-mx', options).split('/').reverse().join('-')
-    const comidaInicio = (new Date).toLocaleTimeString()
+    const comidaInicio = (new Date).toLocaleTimeString('es-mx')
 
     db.query('UPDATE chequeos SET comidaInicio=? WHERE idBarber = ? AND dia = ?',
         [comidaInicio, idBarber, dia],
