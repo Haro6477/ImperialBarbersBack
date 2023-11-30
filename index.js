@@ -627,7 +627,7 @@ app.get("/cobros-hoy", (req, res) => {
         + 'from cobros as v '
         + 'inner join clientes as c on v.idCliente = c.id '
         + 'inner join empleados as b on v.idBarber = b.id '
-        + "inner join empleados as s on v.idCobrador = s.id WHERE DATE(fecha) = DATE(DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))) order by fecha desc"
+        + "inner join empleados as s on v.idCobrador = s.id WHERE DATE(fecha) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) order by fecha desc"
     db.query(query,
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -732,7 +732,7 @@ app.post("/create-movimiento", (req, res) => {
 
 app.get("/movimientos", (req, res) => {
 
-    const query = "SELECT m.id, concepto, cantidad, fechaHora, nombre FROM movimientos as m INNER JOIN empleados on idUsuario = empleados.id WHERE DATE(fechaHora) != DATE(DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')))"
+    const query = "SELECT m.id, concepto, cantidad, fechaHora, nombre FROM movimientos as m INNER JOIN empleados on idUsuario = empleados.id WHERE DATE(fechaHora) != DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))"
     db.query(query,
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -741,7 +741,7 @@ app.get("/movimientos", (req, res) => {
 });
 app.get("/movimientos-hoy", (req, res) => {
 
-    const query = "SELECT m.id, concepto, cantidad, fechaHora, nombre FROM movimientos as m INNER JOIN empleados on idUsuario = empleados.id WHERE DATE(fechaHora) = DATE(DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')))"
+    const query = "SELECT m.id, concepto, cantidad, fechaHora, nombre FROM movimientos as m INNER JOIN empleados on idUsuario = empleados.id WHERE DATE(fechaHora) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))"
     db.query(query,
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -901,7 +901,7 @@ app.get("/chequeo/:id", (req, res) => {
 
 app.get("/descanso/:id", (req, res) => {
     const id = req.params.id
-    db.query("SELECT comidaInicio, comidaFin from chequeos WHERE dia = DATE(DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))) AND idBarber = ?", id,
+    db.query("SELECT comidaInicio, comidaFin from chequeos WHERE dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) AND idBarber = ?", id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -922,10 +922,9 @@ app.put("/iniciar-descanso", (req, res) => {
     const idBarber = req.body.idBarber
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
     const dia = (new Date).toLocaleDateString('es-mx', options).split('/').reverse().join('-')
-    const comidaInicio = (new Date).toLocaleTimeString('es-mx')
 
-    db.query('UPDATE chequeos SET comidaInicio=? WHERE idBarber = ? AND dia = ?',
-        [comidaInicio, idBarber, dia],
+    db.query("UPDATE chequeos SET comidaInicio = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))  WHERE idBarber = ? AND dia = ?",
+        [idBarber, dia],
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -935,10 +934,9 @@ app.put("/finalizar-descanso", (req, res) => {
     const idBarber = req.body.idBarber
     const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
     const dia = (new Date).toLocaleDateString('es-mx', options).split('/').reverse().join('-')
-    const comidaFin = (new Date).toLocaleTimeString('es-mx')
 
-    db.query('UPDATE chequeos SET comidaFin=? WHERE idBarber = ? AND dia = ?',
-        [comidaFin, idBarber, dia],
+    db.query("UPDATE chequeos SET comidaFin = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = ?",
+        [ idBarber, dia],
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
