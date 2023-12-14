@@ -8,8 +8,7 @@ const fs = require('fs');
 const { PORT, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = require("./config");
 
 app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-    res.header('Access-Control-Allow-Origin', 'http://192.168.1.67:5173');
+    res.header('Access-Control-Allow-Origin', '*');
     next();
   });
 app.use(cors({ credentials: true, origin: ['http://localhost:5173', 'http://192.168.1.71:5173', 'http://192.168.1.78:5173', 'http://192.168.1.67:5173', 'http://192.168.1.71:5173'] }));
