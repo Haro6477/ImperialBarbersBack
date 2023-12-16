@@ -6,11 +6,12 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs');
 const { PORT, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = require("./config");
+const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
 
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     next();
-  });
+});
 app.use(cors({ credentials: true, origin: ['http://localhost:5173', 'http://192.168.1.71:5173', 'http://192.168.1.78:5173', 'http://192.168.1.67:5173', 'http://192.168.1.71:5173'] }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dbimages')))
@@ -34,6 +35,16 @@ app.get("/auth/:user/:pass", (req, res) => {
             err ? console.log(err) : res.send(result);
         }
     );
+})
+
+app.put("/cambio-municipio", (req, res) => {
+    const id = req.body.id
+    const municipio = req.body.municipio
+    db.query('UPDATE empleados SET municipio=? WHERE id=?', [municipio, id],
+        (err, result) => {
+            err ? console.log(err) : res.send(result);
+        }
+    )
 })
 
 // Funciones para los clientes
@@ -113,7 +124,7 @@ app.get("/cliente/:id", (req, res) => {
 
 // Funciones para los empleados
 app.get("/empleados", (req, res) => {
-    db.query('SELECT id, usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, color, municipio FROM empleados order by nombre',
+    db.query('SELECT id, usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, color, municipio FROM empleados WHERE id <> 7 order by nombre',
         (err, rows) => {
             if (err) { console.log(err) }
             else {
@@ -149,7 +160,8 @@ const formatearFecha = (fecha) => {
 }
 app.get("/servicios-semana-all/:id", (req, res) => {
     const id = req.params.id
-    var lunes = new Date().toLocaleDateString('es-mx');
+    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
+    const lunes = new Date(now + 'T00:00:00')
     var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
     lunes.setDate(lunes.getDate() - nDay);
     const expresion = 'SELECT ds.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, ds.precioActual, ds.cantidad, s.nombre AS servicio FROM detallescobroservicios AS ds '
@@ -168,7 +180,8 @@ app.get("/servicios-semana-all/:id", (req, res) => {
         })
 })
 app.get("/servicios-semana", (req, res) => {
-    var lunes = new Date().toLocaleDateString('es-mx');
+    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
+    const lunes = new Date(now + 'T00:00:00')
     var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
     lunes.setDate(lunes.getDate() - nDay);
     const expresion = 'SELECT ds.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, ds.precioActual, ds.cantidad, s.nombre AS servicio FROM detallescobroservicios AS ds '
@@ -188,7 +201,8 @@ app.get("/servicios-semana", (req, res) => {
 })
 app.get("/servicios-semana/:id", (req, res) => {
     const id = req.params.id
-    var lunes = new Date().toLocaleDateString('es-mx');
+    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
+    const lunes = new Date(now + 'T00:00:00')
     var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
     lunes.setDate(lunes.getDate() - nDay);
 
@@ -209,7 +223,8 @@ app.get("/servicios-semana/:id", (req, res) => {
 })
 app.get("/productos-semana-all/:id", (req, res) => {
     const id = req.params.id
-    var lunes = new Date().toLocaleDateString('es-mx');
+    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
+    const lunes = new Date(now + 'T00:00:00')
     var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
     lunes.setDate(lunes.getDate() - nDay);
     const expresion = 'SELECT dp.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, dp.precioActual, dp.cantidad, p.nombre AS producto FROM detallescobroproductos AS dp '
@@ -228,7 +243,8 @@ app.get("/productos-semana-all/:id", (req, res) => {
         })
 })
 app.get("/productos-semana", (req, res) => {
-    var lunes = new Date().toLocaleDateString('es-mx');
+    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
+    const lunes = new Date(now + 'T00:00:00')
     var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
     lunes.setDate(lunes.getDate() - nDay);
     const expresion = 'SELECT dp.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, dp.precioActual, dp.cantidad, p.nombre AS producto FROM detallescobroproductos AS dp '
@@ -248,7 +264,8 @@ app.get("/productos-semana", (req, res) => {
 })
 app.get("/productos-semana/:id", (req, res) => {
     const id = req.params.id
-    var lunes = new Date().toLocaleDateString('es-mx');
+    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
+    const lunes = new Date(now + 'T00:00:00')
     var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
     lunes.setDate(lunes.getDate() - nDay);
     const expresion = 'SELECT dp.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, dp.precioActual, dp.cantidad, p.nombre AS producto FROM detallescobroproductos AS dp '
@@ -548,7 +565,7 @@ app.put("/update-producto", (req, res) => {
     const pts = req.body.pts
     const imagen = req.body.imagen
 
-    db.query('UPDATE productos SET nombre=?,marca=?,linea=?,contenido=?,enVenta=?,suministros=?,almacen=?,descripcion=?,costo=?,precio=?,pts=?,imagen=?, WHERE id=?',
+    db.query('UPDATE productos SET nombre=?,marca=?,linea=?,contenido=?,enVenta=?,suministros=?,almacen=?,descripcion=?,costo=?,precio=?,pts=?,imagen=? WHERE id=?',
         [nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen, id],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -940,7 +957,6 @@ app.post("/create-chequeos", (req, res) => {
 });
 app.put("/iniciar-descanso", (req, res) => {
     const idBarber = req.body.idBarber
-    const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
     const dia = (new Date).toLocaleDateString('es-mx', options).split('/').reverse().join('-')
 
     db.query("UPDATE chequeos SET comidaInicio = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))  WHERE idBarber = ? AND dia = ?",
@@ -952,7 +968,6 @@ app.put("/iniciar-descanso", (req, res) => {
 });
 app.put("/finalizar-descanso", (req, res) => {
     const idBarber = req.body.idBarber
-    const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
     const dia = (new Date).toLocaleDateString('es-mx', options).split('/').reverse().join('-')
 
     db.query("UPDATE chequeos SET comidaFin = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = ?",
@@ -964,7 +979,6 @@ app.put("/finalizar-descanso", (req, res) => {
 });
 app.put("/registrar-salida", (req, res) => {
     const idBarber = req.body.idBarber
-    const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
     const dia = (new Date).toLocaleDateString('es-mx', options).split('/').reverse().join('-')
     const salida = (new Date).toLocaleTimeString('es-mx')
 
