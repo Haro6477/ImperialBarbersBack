@@ -8,7 +8,7 @@ const fs = require('fs');
 const { PORT, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = require("./config");
 const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
 
-app.use(cors({origin: ['*', 'http://localhost:5173']}));
+app.use(cors({credentials: true}));
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dbimages')))
