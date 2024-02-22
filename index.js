@@ -431,7 +431,7 @@ app.put("/update-empleado-municipio", (req, res) => {
 const diskStorage = multer.diskStorage({
     destination: path.join(__dirname, './images'),
     filename: (req, file, cb) => {
-        cb(null, new Date().toLocaleDateString('es-mx') + file.originalname)
+        cb(null, file.originalname)
     }
 })
 
@@ -459,7 +459,7 @@ app.put('/update-foto-empleado', fileUpload, (req, res) => {
     const data = fs.readFileSync(path.join(__dirname, './images/' + req.file.filename))
 
     connection.query('UPDATE empleados set foto = ? WHERE id = ?', [data, id], (err, result) => {
-        if (err) return res.status(500).send('server error')
+        if (err) return res.status(500).send('Error al actualizar foto')
         else res.send("Foto actualizada\nActualizar para mostrar cambios")
     })
 })
