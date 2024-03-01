@@ -987,7 +987,7 @@ app.put("/iniciar-descanso", (req, res) => {
     const idBarber = req.body.idBarber
 
     connection.query("UPDATE chequeos SET comidaInicio = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))  WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
-        [idBarber, dia],
+        [idBarber],
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -997,7 +997,7 @@ app.put("/finalizar-descanso", (req, res) => {
     const idBarber = req.body.idBarber
 
     connection.query("UPDATE chequeos SET comidaFin = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
-        [idBarber, dia],
+        [idBarber],
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -1007,7 +1007,7 @@ app.put("/registrar-salida", (req, res) => {
     const idBarber = req.body.idBarber
 
     connection.query("UPDATE chequeos SET salida = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
-        [idBarber, dia],
+        [idBarber],
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
