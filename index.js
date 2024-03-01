@@ -985,9 +985,8 @@ app.post("/create-chequeos", (req, res) => {
 });
 app.put("/iniciar-descanso", (req, res) => {
     const idBarber = req.body.idBarber
-    const dia = (new Date).toLocaleDateString('es-mx', options).split('/').reverse().join('-')
 
-    connection.query("UPDATE chequeos SET comidaInicio = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))  WHERE idBarber = ? AND dia = ?",
+    connection.query("UPDATE chequeos SET comidaInicio = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))  WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
         [idBarber, dia],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -996,9 +995,8 @@ app.put("/iniciar-descanso", (req, res) => {
 });
 app.put("/finalizar-descanso", (req, res) => {
     const idBarber = req.body.idBarber
-    const dia = (new Date).toLocaleDateString('es-mx', options).split('/').reverse().join('-')
 
-    connection.query("UPDATE chequeos SET comidaFin = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = ?",
+    connection.query("UPDATE chequeos SET comidaFin = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
         [idBarber, dia],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -1007,9 +1005,8 @@ app.put("/finalizar-descanso", (req, res) => {
 });
 app.put("/registrar-salida", (req, res) => {
     const idBarber = req.body.idBarber
-    const dia = (new Date).toLocaleDateString('es-mx', options).split('/').reverse().join('-')
 
-    connection.query("UPDATE chequeos SET salida = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = ?",
+    connection.query("UPDATE chequeos SET salida = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
         [idBarber, dia],
         (err, result) => {
             err ? console.log(err) : res.send(result);
