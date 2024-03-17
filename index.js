@@ -670,7 +670,7 @@ app.get("/cobros/:municipio", (req, res) => {
         + 'from cobros as v '
         + 'inner join clientes as c on v.idCliente = c.id '
         + 'inner join empleados as b on v.idBarber = b.id '
-        + 'inner join empleados as s on v.idCobrador = s.id WHERE v.municipio = ' + municipio + ' order by fecha desc'
+        + 'inner join empleados as s on v.idCobrador = s.id WHERE v.municipio = ' + municipio + ' order by fecha desc LIMIT 300'
     connection.query(query,
         (err, result) => {
             err ? console.log(err) : res.send(result);
