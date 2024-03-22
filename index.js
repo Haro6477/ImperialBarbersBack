@@ -461,23 +461,9 @@ app.put("/update-empleado-municipio", (req, res) => {
     );
 });
 
+
 const diskStorage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const dir = './images';
-
-        // Elimina los archivos existentes en la carpeta
-        fs.readdir(dir, (err, files) => {
-            if (err) throw err;
-
-            for (const file of files) {
-                fs.unlink(path.join(dir, file), err => {
-                    if (err) throw err;
-                });
-            }
-        });
-
-        cb(null, dir);
-    },
+    destination: path.join(__dirname, './images'),
     filename: (req, file, cb) => {
         cb(null, file.originalname)
     }
