@@ -5,6 +5,8 @@ const mysql = require("mysql2");
 const multer = require('multer')
 const path = require('path')
 const fs = require('fs');
+const sharp = require('sharp');
+
 const { PORT, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = require("./config");
 const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
 
@@ -107,7 +109,23 @@ app.post("/create-cliente", (req, res) => {
     connection.query('INSERT INTO clientes(nombre,telefono,pts,genero,fechaNacimiento,codigoQR,municipio) VALUES(?,?,?,?,?,?,?)',
         [nombre, telefono, pts, genero, fechaNacimiento, codigoQR, municipio],
         (err, result) => {
-            err ? console.log(err) : res.send(result);
+            if (err) {
+                console.log(err);
+                res.status(500).send("Error al insertar el cliente");
+            } else {
+                connection.query(
+                    'SELECT * FROM clientes WHERE id = ?',
+                    [result.insertId],
+                    (err, rows) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send("Error al obtener el cliente insertado");
+                        } else {
+                            res.send(rows[0]);
+                        }
+                    }
+                );
+            }
         }
     );
 });
@@ -363,7 +381,23 @@ app.post("/create-empleado", (req, res) => {
     connection.query('INSERT INTO empleados(usuario,pass,nombre,telefono,correo,fechaNacimiento,fechaInicio,puesto,estatus,foto,municipio) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
         [usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, foto, municipio],
         (err, result) => {
-            err ? console.log(err) : res.send(result);
+            if (err) {
+                console.log(err);
+                res.status(500).send("Error al insertar el empleado");
+            } else {
+                connection.query(
+                    'SELECT * FROM empleados WHERE id = ?',
+                    [result.insertId],
+                    (err, rows) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send("Error al obtener el empleado insertado");
+                        } else {
+                            res.send(rows[0]);
+                        }
+                    }
+                );
+            }
         }
     );
 });
@@ -439,29 +473,31 @@ const fileUpload = multer({
     storage: diskStorage
 }).single('image')
 
-app.put('/add-foto-empleado', fileUpload, (req, res) => {
-    console.log('file:  ' + req.file)
-    console.log('body:  ' + req.body.idn)
-    // const type = req.file.mimetype
-    // const name = req.file.originalname
-    // const data = fs.readFileSync(path.join(__dirname, './images/' + req.file.filename))
-
-    // db.query('INSERT INTO fotosempleados set ?', [{ type, name, data }], (err, rows) => {
-    //     if (err) return res.status(500).send('server error')
-    //     res.send('¡Foto guardada!')
-    // })
-})
 
 app.put('/update-foto-empleado', fileUpload, (req, res) => {
     const id = req.body.id
     const type = req.file.mimetype
     const name = req.file.originalname
-    const data = fs.readFileSync(path.join(__dirname, './images/' + req.file.filename))
+    const imagePath = path.join(__dirname, './images/' + req.file.filename)
 
-    connection.query('UPDATE empleados set foto = ? WHERE id = ?', [data, id], (err, result) => {
-        if (err) return res.status(500).send('Error al actualizar foto')
-        else res.send("Foto actualizada\nActualizar para mostrar cambios")
-    })
+    const width = 420; 
+    const format = 'webp'; 
+
+    sharp(imagePath)
+        .resize(width)
+        .toFormat(format)
+        .toBuffer()
+        .then(data => {
+            connection.query('UPDATE empleados set foto = ? WHERE id = ?', [data, id], (err, result) => {
+                if (err) return res.status(500).send('Error al actualizar foto')
+                else res.send("Foto actualizada\nActualizar para mostrar cambios")
+            })
+        })
+        .catch(err => {
+            // Maneja cualquier error que ocurra durante la manipulación de la imagen
+            console.error(err);
+            res.status(500).send('Error al procesar la imagen');
+        });
 })
 
 app.delete("/delete-empleado/:id", (req, res) => {
@@ -505,7 +541,23 @@ app.post("/create-servicio", (req, res) => {
     connection.query('INSERT INTO servicios(nombre,descripcion,precio,pts,municipio) VALUES(?,?,?,?,?)',
         [nombre, descripcion, precio, pts, municipio],
         (err, result) => {
-            err ? console.log(err) : res.send(result);
+            if (err) {
+                console.log(err);
+                res.status(500).send("Error al insertar el servicio");
+            } else {
+                connection.query(
+                    'SELECT * FROM servicios WHERE id = ?',
+                    [result.insertId],
+                    (err, rows) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send("Error al obtener el servicio insertado");
+                        } else {
+                            res.send(rows[0]);
+                        }
+                    }
+                );
+            }
         }
     );
 });
@@ -520,7 +572,23 @@ app.put("/update-servicio", (req, res) => {
     connection.query('UPDATE servicios SET nombre=?,descripcion=?,precio=?,pts=? WHERE id=?',
         [nombre, descripcion, precio, pts, id],
         (err, result) => {
-            err ? console.log(err) : res.send(result);
+            if (err) {
+                console.log(err);
+                res.status(500).send("Error al actualizar el servicio");
+            } else {
+                connection.query(
+                    'SELECT * FROM servicios WHERE id = ?',
+                    [result.insertId],
+                    (err, rows) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send("Error al obtener el servicio actualizado");
+                        } else {
+                            res.send(rows[0]);
+                        }
+                    }
+                );
+            }
         }
     );
 });
@@ -573,7 +641,23 @@ app.post("/create-producto", (req, res) => {
     connection.query('INSERT INTO productos(nombre,marca,linea,contenido,enVenta,suministros,almacen,descripcion,costo,precio,pts,imagen,municipio) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
         [nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio],
         (err, result) => {
-            err ? console.log(err) : res.send(result);
+            if (err) {
+                console.log(err);
+                res.status(500).send("Error al insertar el producto");
+            } else {
+                connection.query(
+                    'SELECT * FROM productos WHERE id = ?',
+                    [result.insertId],
+                    (err, rows) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send("Error al obtener el producto insertado");
+                        } else {
+                            res.send(rows[0]);
+                        }
+                    }
+                );
+            }
         }
     );
 });
@@ -596,7 +680,23 @@ app.put("/update-producto", (req, res) => {
     connection.query('UPDATE productos SET nombre=?,marca=?,linea=?,contenido=?,enVenta=?,suministros=?,almacen=?,descripcion=?,costo=?,precio=?,pts=?,imagen=? WHERE id=?',
         [nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen, id],
         (err, result) => {
-            err ? console.log(err) : res.send(result);
+            if (err) {
+                console.log(err);
+                res.status(500).send("Error al actualizar el producto");
+            } else {
+                connection.query(
+                    'SELECT * FROM productos WHERE id = ?',
+                    [result.insertId],
+                    (err, rows) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send("Error al obtener el producto actualizado");
+                        } else {
+                            res.send(rows[0]);
+                        }
+                    }
+                );
+            }
         }
     );
 });
@@ -640,11 +740,13 @@ app.get("/permisos-usuario/:id", (req, res) => {
     );
 })
 
-app.post("/create-permiso", (req, res) => {
-    const permiso = req.body.permiso
-    const idEmpleado = req.body.idEmpleado
-    connection.query('INSERT INTO permisos(permiso, idEmpleado) VALUES(?,?)',
-        [permiso, idEmpleado],
+app.post("/create-permisos", (req, res) => {
+    const permisos = req.body.permisos
+    let values = ''
+    permisos.forEach(permiso => {
+        values += '("' + permiso.permiso + '",' + permiso.idEmpleado + '),'
+    });
+    connection.query("INSERT INTO permisos(permiso, idEmpleado) VALUES " + values.slice(0, -1),
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -762,7 +864,23 @@ app.put("/update-cliente-pts", (req, res) => {
     connection.query('UPDATE clientes SET pts=pts+? WHERE id=?',
         [pts, id],
         (err, result) => {
-            err ? console.log(err) : res.send(result);
+            if (err) {
+                console.log(err);
+                res.status(500).send("Error al actualizar puntos");
+            } else {
+                connection.query(
+                    'SELECT * FROM clientes WHERE id = ?',
+                    [id],
+                    (err, rows) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send("Error al obtener el cliente modificado");
+                        } else {
+                            res.send(rows[0]);
+                        }
+                    }
+                );
+            }
         }
     );
 });
@@ -787,7 +905,24 @@ app.post("/create-movimiento", (req, res) => {
     connection.query('INSERT INTO movimientos(concepto,cantidad,idUsuario,municipio) VALUES(?,?,?,?)',
         [concepto, cantidad, idUsuario, municipio],
         (err, result) => {
-            err ? console.log(err) : res.send(result);
+            if (err) {
+                console.log(err);
+                res.status(500).send("Error al insertar movimiento");
+            } else {
+                connection.query(
+                    "SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio FROM movimientos as m INNER JOIN empleados on idUsuario = empleados.id WHERE m.id = ?",
+
+                    [result.insertId],
+                    (err, rows) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send("Error al obtener el movimiento insertado");
+                        } else {
+                            res.send(rows[0]);
+                        }
+                    }
+                );
+            }
         }
     );
 });
@@ -883,6 +1018,16 @@ app.post("/create-reporte", (req, res) => {
     );
 });
 
+app.get("/reporte-hoy/:municipio", (req, res) => {
+    const municipio = req.params.municipio
+
+    connection.query("SELECT id FROM reportes WHERE DATE(fecha) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) AND municipio = " + municipio,
+        (err, result) => {
+            err ? console.log(err) : res.send(result[0]);
+        }
+    );
+})
+
 //Horarios
 app.get("/horarios", (req, res) => {
     connection.query('SELECT * FROM horarios',
@@ -938,7 +1083,7 @@ app.put("/update-horario", (req, res) => {
 //Chequeos
 app.get("/chequeos", (req, res) => {
     const query = 'SELECT dia, entrada, comidaInicio, comidaFin, salida, empleados.nombre from chequeos '
-        + 'inner join empleados on idBarber = empleados.id order by dia desc'
+        + 'inner join empleados on idBarber = empleados.id order by dia desc LIMIT 50'
     connection.query(query, (err, result) => {
         err ? console.log(err) : res.send(result);
     }
