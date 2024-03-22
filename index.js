@@ -338,7 +338,7 @@ app.get("/fotos-empleados", (req, res) => {
             else {
                 rows.map(img => {
                     if (img.foto)
-                        fs.writeFileSync(path.join(__dirname, './dbimages/empleado' + img.id + '.jpeg'), img.foto)
+                        fs.writeFileSync(path.join(__dirname, './dbimages/empleado' + img.id + '.webp'), img.foto)
                 })
                 const imagedir = fs.readdirSync(path.join(__dirname, './dbimages/'))
                 res.json(imagedir)
@@ -354,9 +354,15 @@ app.get("/foto-empleado/:id", (req, res) => {
             if (err) { console.log(err) }
             else {
                 if (row[0].foto) {
-                    fs.writeFileSync(path.join(__dirname, './dbimages/empleado' + row[0].id + '.jpeg'), row[0].foto)
-                    const imageDir = fs.readdirSync(path.join(__dirname, './dbimages/'))
-                    res.json('empleado' + row[0].id + '.jpeg')
+                    const dir = path.join(__dirname, './dbimages');
+                    
+                    if (!fs.existsSync(dir)){
+                        fs.mkdirSync(dir);
+                    }
+
+                    fs.writeFileSync(path.join(dir, 'empleado' + row[0].id + '.webp'), row[0].foto)
+                    const imageDir = fs.readdirSync(dir)
+                    res.json('empleado' + row[0].id + '.webp')
                 } else {
                     res.json(null)
                 }
