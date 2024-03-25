@@ -168,6 +168,66 @@ app.get("/cliente/:id", (req, res) => {
     );
 })
 
+app.get("/cuentas", (req, res) => {
+    connection.query('SELECT idCliente FROM clientes',
+        (err, result) => {
+            err ? console.log(err) : res.send(result);
+        }
+    );
+})
+
+app.get("/cuentas/:idCliente", (req, res) => {
+    const idCliente = req.params.idCliente
+
+    connection.query('SELECT * FROM clientes WHERE idCliente=?', idCliente,
+        (err, result) => {
+            err ? console.log(err) : res.send(result);
+        }
+    );
+})
+
+app.post("/create-cuenta", (req, res) => {
+    const idCliente = req.body.idCliente
+    const idCobro = req.body.idCobro
+    const descripcion = req.body.descripcion
+    const estatus = req.body.estatus
+
+    connection.query('INSERT INTO cuentas(idCliente,idCobro,descripcion,estatus) VALUES(?,?,?,?)',
+        [idCliente, idCobro, descripcion, estatus],
+        (err, result) => {
+            if (err) {
+                console.log(err);
+                res.status(500).send("Error al insertar cuenta");
+            } else {
+                connection.query(
+                    'SELECT * FROM cuentas WHERE id = ?',
+                    [result.insertId],
+                    (err, rows) => {
+                        if (err) {
+                            console.log(err);
+                            res.status(500).send("Error al obtener la cuenta insertado");
+                        } else {
+                            res.send(rows[0]);
+                        }
+                    }
+                );
+            }
+        }
+    );
+});
+
+app.put("/update-cuenta", (req, res) => {
+    const idCuenta = req.body.idCuenta
+    const estatus = req.body.estatus
+
+    connection.query('UPDATE cuentas SET estatus=? WHERE idCuenta=?',
+        [estatus, idCuenta],
+        (err, result) => {
+            err ? console.log(err) : res.send(result);
+        }
+    );
+});
+
 // Funciones para los empleados
 app.get("/empleados", (req, res) => {
     connection.query('SELECT id, usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, color, municipio FROM empleados WHERE id <> 7 order by nombre',
@@ -355,8 +415,8 @@ app.get("/foto-empleado/:id", (req, res) => {
             else {
                 if (row[0].foto) {
                     const dir = path.join(__dirname, './dbimages');
-                    
-                    if (!fs.existsSync(dir)){
+
+                    if (!fs.existsSync(dir)) {
                         fs.mkdirSync(dir);
                     }
 
@@ -486,8 +546,8 @@ app.put('/update-foto-empleado', fileUpload, (req, res) => {
     const name = req.file.originalname
     const imagePath = path.join(__dirname, './images/' + req.file.filename)
 
-    const width = 420; 
-    const format = 'webp'; 
+    const width = 420;
+    const format = 'webp';
 
     sharp(imagePath)
         .resize(width)
