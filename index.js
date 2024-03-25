@@ -60,7 +60,7 @@ app.get("/auth/:user/:pass", (req, res) => {
     const usuario = req.params.user
     const pass = req.params.pass
 
-    connection.query('SELECT id FROM empleados WHERE usuario=? AND pass=?', [usuario, pass],
+    connection.query('SELECT id, puesto FROM empleados WHERE usuario=? AND pass=?', [usuario, pass],
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
