@@ -169,7 +169,7 @@ app.get("/cliente/:id", (req, res) => {
 })
 
 app.get("/cuentas", (req, res) => {
-    connection.query('SELECT idCliente FROM clientes',
+    connection.query('SELECT idCliente FROM cuentas',
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
