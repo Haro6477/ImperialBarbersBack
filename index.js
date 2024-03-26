@@ -179,7 +179,7 @@ app.get("/cuentas", (req, res) => {
 app.get("/cuentas/:idCliente", (req, res) => {
     const idCliente = req.params.idCliente
 
-    connection.query('SELECT * FROM clientes WHERE idCliente=?', idCliente,
+    connection.query('SELECT * FROM cuentas WHERE idCliente=?', idCliente,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -190,10 +190,9 @@ app.post("/create-cuenta", (req, res) => {
     const idCliente = req.body.idCliente
     const idCobro = req.body.idCobro
     const descripcion = req.body.descripcion
-    const estatus = req.body.estatus
 
-    connection.query('INSERT INTO cuentas(idCliente,idCobro,descripcion,estatus) VALUES(?,?,?,?)',
-        [idCliente, idCobro, descripcion, estatus],
+    connection.query('INSERT INTO cuentas(idCliente,idCobro,descripcion) VALUES(?,?,?)',
+        [idCliente, idCobro, descripcion],
         (err, result) => {
             if (err) {
                 console.log(err);
