@@ -9,6 +9,7 @@ const sharp = require('sharp');
 
 const { PORT, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = require("./config");
 const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
+const options2 = { weekday:'long', year: 'numeric', month: 'long', day: 'numeric' }
 
 const corsOptions = {
     origin: function (origin, callback) {
@@ -22,6 +23,9 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dbimages')))
+app.use(express.static(path.join(__dirname, 'public')));
+app.set('view engine', 'ejs');
+
 
 // Conexión db
 const db_config = {
@@ -55,6 +59,15 @@ function handleDisconnect() {
 
 handleDisconnect();
 
+// Home
+app.get('/', (req, res) => {
+    res.send('¡Bienvenido a mi aplicación!');
+});
+
+app.get('/animation', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'animation.html'));
+});
+
 // Función para autenticación
 app.get("/auth/:user/:pass", (req, res) => {
     const usuario = req.params.user
@@ -78,8 +91,35 @@ app.put("/cambio-municipio", (req, res) => {
 })
 
 // Funciones para los clientes
-app.get("/clientes", (req, res) => {
+app.get('/puntos/:id', (req, res) => {
+    const id = req.params.id;
+    connection.query('SELECT pts, nombre, fecha FROM clientes INNER JOIN cobros ON idCliente = clientes.id WHERE clientes.id = ? ORDER BY fecha DESC LIMIT 1;', [id],
+        (err, result) => {
+            if (err) {
+                console.log(err);
+            } else {
+                let data = result[0];
+                data.fecha = new Date(data.fecha).toLocaleDateString('es-mx', options2)
+                res.render('puntos', { data: data });
+            }
+        }
+    );
+});
+app.get('/clientes/puntos/:id', (req, res) => {
+    const id = req.params.id;
+    connection.query('SELECT pts, nombre, DATE(fecha) AS fecha FROM clientes INNER JOIN cobros ON idCliente = clientes.id WHERE clientes.id = ? ORDER BY fecha DESC LIMIT 1;', [id],
+        (err, result) => {
+            if (err) {
+                console.log(err);
+            } else {
+                res.send(result)
+            }
+        }
+    );
+});
 
+
+app.get("/clientes", (req, res) => {
     connection.query('SELECT * FROM clientes order by nombre',
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -251,7 +291,7 @@ app.get("/empleados/:municipio", (req, res) => {
     )
 })
 
-const formatearFecha = (fecha) => {
+const formatearFechaHora = (fecha) => {
     const date = new Date(fecha);
     const yyyy = date.getFullYear()
     let mm = date.getMonth() + 1
@@ -263,6 +303,20 @@ const formatearFecha = (fecha) => {
     const fechaFormateada = yyyy + '-' + mm + '-' + dd + ' 00:00:00';
     return fechaFormateada
 }
+
+const formatearFecha = (fecha) => {
+    const date = new Date(fecha);
+    const yyyy = date.getFullYear()
+    let mm = date.getMonth() + 1
+    let dd = date.getDate()
+
+    if (dd < 10) dd = '0' + dd
+    if (mm < 10) mm = '0' + mm
+
+    const fechaFormateada = yyyy + '-' + mm + '-' + dd;
+    return fechaFormateada
+}
+
 app.get("/servicios-semana-all/:id", (req, res) => {
     const id = req.params.id
     const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
@@ -274,7 +328,7 @@ app.get("/servicios-semana-all/:id", (req, res) => {
         + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
         + ' INNER JOIN empleados AS e ON ds.idBarber = e.id'
         + ' INNER JOIN servicios AS s ON ds.idServicio = s.id'
-        + " WHERE fecha < '" + formatearFecha(lunes) + "' AND c.idCliente != '122' AND ds.idBarber = " + id
+        + " WHERE fecha < '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND ds.idBarber = " + id
         + ' order by fecha desc'
     connection.query(expresion,
         (err, rows) => {
@@ -294,7 +348,7 @@ app.get("/servicios-semana", (req, res) => {
         + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
         + ' INNER JOIN empleados AS e ON ds.idBarber = e.id'
         + ' INNER JOIN servicios AS s ON ds.idServicio = s.id'
-        + " WHERE fecha >= '" + formatearFecha(lunes) + "' AND c.idCliente != '122'"
+        + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122'"
         + ' order by fecha desc'
     connection.query(expresion,
         (err, rows) => {
@@ -316,7 +370,7 @@ app.get("/servicios-semana/:id", (req, res) => {
         + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
         + ' INNER JOIN empleados AS e ON ds.idBarber = e.id'
         + ' INNER JOIN servicios AS s ON ds.idServicio = s.id'
-        + " WHERE fecha >= '" + formatearFecha(lunes) + "' AND c.idCliente != '122' AND ds.idBarber = " + id
+        + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND ds.idBarber = " + id
         + ' order by fecha desc'
     connection.query(expresion,
         (err, rows) => {
@@ -337,7 +391,7 @@ app.get("/productos-semana-all/:id", (req, res) => {
         + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
         + ' INNER JOIN empleados AS e ON dp.idBarber = e.id'
         + ' INNER JOIN productos AS p ON dp.idProducto = p.id'
-        + " WHERE fecha < '" + formatearFecha(lunes) + "' AND c.idCliente != '122' AND dp.idBarber = " + id
+        + " WHERE fecha < '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND dp.idBarber = " + id
         + ' order by fecha desc'
     connection.query(expresion,
         (err, rows) => {
@@ -357,7 +411,7 @@ app.get("/productos-semana", (req, res) => {
         + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
         + ' INNER JOIN empleados AS e ON dp.idBarber = e.id'
         + ' INNER JOIN productos AS p ON dp.idProducto = p.id'
-        + " WHERE fecha >= '" + formatearFecha(lunes) + "' AND c.idCliente != '122'"
+        + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122'"
         + ' order by fecha desc'
     connection.query(expresion,
         (err, rows) => {
@@ -378,7 +432,7 @@ app.get("/productos-semana/:id", (req, res) => {
         + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
         + ' INNER JOIN empleados AS e ON dp.idBarber = e.id'
         + ' INNER JOIN productos AS p ON dp.idProducto = p.id'
-        + " WHERE fecha >= '" + formatearFecha(lunes) + "' AND c.idCliente != '122' AND dp.idBarber = " + id
+        + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND dp.idBarber = " + id
         + ' order by fecha desc'
     connection.query(expresion,
         (err, rows) => {
