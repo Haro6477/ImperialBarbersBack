@@ -105,19 +105,6 @@ app.get('/puntos/:id', (req, res) => {
         }
     );
 });
-app.get('/clientes/puntos/:id', (req, res) => {
-    const id = req.params.id;
-    connection.query('SELECT pts, nombre, DATE(fecha) AS fecha FROM clientes INNER JOIN cobros ON idCliente = clientes.id WHERE clientes.id = ? ORDER BY fecha DESC LIMIT 1;', [id],
-        (err, result) => {
-            if (err) {
-                console.log(err);
-            } else {
-                res.send(result)
-            }
-        }
-    );
-});
-
 
 app.get("/clientes", (req, res) => {
     connection.query('SELECT * FROM clientes order by nombre',

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Imperial Barbers</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+</head>
+
+<body class="relative font-inter antialiased">
+
+  <main class="relative min-h-screen flex flex-col justify-center bg-slate-50 overflow-hidden">
+    <div class="w-full max-w-5xl mx-auto px-4 md:px-6 py-24">
+
+      <!-- Animated Number Counter -->
+      <section class="grid gap-12 md:grid-cols-3 md:gap-16">
+        <!-- Block #1 -->
+        <article>
+          <div class="w-14 h-14 rounded shadow-md bg-white flex justify-center items-center rotate-3 mb-6">
+
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="w-8 h-8">
+              <defs>
+                <linearGradient id="icon1-a" x1="50%" x2="50%" y1="0%" y2="100%">
+                  <stop offset="0%" stop-color="#A5B4FC" />
+                  <stop offset="100%" stop-color="#4F46E5" />
+                </linearGradient>
+                <linearGradient id="icon1-b" x1="50%" x2="50%" y1="0%" y2="100%">
+                  <stop offset="0%" stop-color="#EEF2FF" />
+                  <stop offset="100%" stop-color="#C7D2FE" />
+                </linearGradient>
+              </defs>
+              <path fill="url(#icon1-b)" stroke-linecap="round" stroke-linejoin="round"
+                d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z" />
+            </svg>
+
+          </div>
+          <h2>
+            <span
+              class="flex tabular-nums text-slate-900 text-5xl font-extrabold mb-2 transition-[_--num] duration-[3s] ease-out [counter-set:_num_var(--num)] supports-[counter-set]:before:content-[counter(num)]"
+              x-data="{ shown: false }" x-intersect="shown = true" :class="shown && '[--num:<%= data.pts %>]'">
+              <span class="supports-[counter-set]:sr-only"> </span>&nbspPts.
+            </span>
+            <span
+              class="inline-flex font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-indigo-300 mb-2">
+              <%= data.nombre %>
+            </span>
+          </h2>
+          <p class="text-sm text-slate-500">Última visita: <%= data.fecha %>.
+          </p>
+          <hr class="mt-2 mb-2">
+          <p class="text-sm text-slate-500">Los puntos se pueden canjear en las barberías <u><strong><a href="https://www.google.com/maps/place/Imperial+barbers/@19.842461,-97.5008641,17z/data=!3m1!4b1!4m6!3m5!1s0x85da95c459531c1d:0x6573d06e237464ed!8m2!3d19.842456!4d-97.4982892!16s%2Fg%2F11vh_ctdkz?entry=ttu">Imperial Barbers</a></strong></u>. Cada punto
+            equivale a $0.50 MXN.</p>
+        </article>
+      </section>
+      <!-- End: Animated Number Counter -->
+
+      <div id="qlogo">
+        <div class="poziomq">
+          <figure class="liscie">
+            <span class="lisc-lewy"><span class="after"></span></span>
+            <span class="lisc-lewy drugi"><span class="after"></span></span>
+            <span class="lisc-prawy"><span class="after"></span></span>
+            <span class="lisc-prawy drugi"><span class="after"></span></span>
+            <span class="lodyga"></span>
+          </figure>
+          <figure class="rece">
+            <span class="reka reka-lewa"></span>
+            <span class="reka reka-prawa"></span>
+          </figure>
+          <figure class="cialo">
+            <span class="twarz">
+              <span class="oczy">
+                <span class="oko oko-lewe"></span>
+                <span class="oko oko-prawe"></span>
+              </span>
+              <span class="piegi">
+                <span class="pieg pieg-lewy"></span>
+                <span class="pieg pieg-prawy"></span>
+              </span>
+              <span class="buzia">
+                <span class="gardlo"></span>
+                <span class="zuby"></span>
+              </span>
+            </span>
+          </figure>
+          <figure class="nogi">
+            <span class="noga-lewa"></span>
+            <span class="noga-prawa"></span>
+          </figure>
+        </div>
+        <figure class="cien"></figure>
+        <figure class="tekst">Hover Me!</figure>
+      </div>
+    </div>
+    
+
+
+
+  </main>
+
+  <!-- Page footer -->
+  <footer class="absolute left-6 right-6 md:left-12 md:right-auto bottom-4 md:bottom-8 text-center md:text-left">
+
+  </footer>
+
+
+
+</body>
+
+</html>
