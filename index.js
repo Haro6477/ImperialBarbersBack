@@ -684,7 +684,7 @@ app.put("/update-servicio", (req, res) => {
             } else {
                 connection.query(
                     'SELECT * FROM servicios WHERE id = ?',
-                    [result.insertId],
+                    [id],
                     (err, rows) => {
                         if (err) {
                             console.log(err);
@@ -792,7 +792,7 @@ app.put("/update-producto", (req, res) => {
             } else {
                 connection.query(
                     'SELECT * FROM productos WHERE id = ?',
-                    [result.insertId],
+                    [id],
                     (err, rows) => {
                         if (err) {
                             console.log(err);
