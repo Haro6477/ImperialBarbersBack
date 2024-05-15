@@ -116,10 +116,13 @@ app.get("/clientes", (req, res) => {
 
 app.get("/countries-para-la-chiquis", (req, res) => {
     paises = [
-        { id: 1, name: "Chiapas" },
-        { id: 2, name: "México" },
-        { id: 3, name: "Venezuela" },
-        { id: 4, name: "Suiza" }
+        { id: 1, name: "Me" },
+        { id: 2, name: "Debes" },
+        { id: 3, name: "Una" },
+        { id: 5, name: "Maldita" },
+        { id: 6, name: "Agua" },
+        { id: 7, name: "De" },
+        { id: 8, name: "Tamarindo" }
     ]
     res.send(paises)
 });
