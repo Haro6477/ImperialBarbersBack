@@ -114,6 +114,16 @@ app.get("/clientes", (req, res) => {
     );
 });
 
+app.get("/countries-para-la-chiquis", (req, res) => {
+    paises = [
+        {id:1, name: "Chiapas"},
+        {id:2, name: "México"},
+        {id:3, name: "Venezuela"},
+        {id:4, name: "Suiza"}
+    ]
+    res.send(paises)
+});
+
 app.get("/clientes/:municipio", (req, res) => {
     const municipio = req.params.municipio;
 
