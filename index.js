@@ -9,7 +9,7 @@ const sharp = require('sharp');
 
 const { PORT, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = require("./config");
 const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
-const options2 = { weekday:'long', year: 'numeric', month: 'long', day: 'numeric' }
+const options2 = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
 
 const corsOptions = {
     origin: function (origin, callback) {
@@ -116,12 +116,44 @@ app.get("/clientes", (req, res) => {
 
 app.get("/countries-para-la-chiquis", (req, res) => {
     paises = [
-        {id:1, name: "Chiapas"},
-        {id:2, name: "México"},
-        {id:3, name: "Venezuela"},
-        {id:4, name: "Suiza"}
+        { id: 1, name: "Chiapas" },
+        { id: 2, name: "México" },
+        { id: 3, name: "Venezuela" },
+        { id: 4, name: "Suiza" }
     ]
     res.send(paises)
+});
+
+app.get("/verificando", (req, res) => {
+    let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
+    tiempoAleatorio *= 1000;
+    setTimeout(() => {
+        res.status(200).send('OK');
+    }, tiempoAleatorio);
+});
+
+app.get("/subiendo", (req, res) => {
+    let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
+    tiempoAleatorio *= 1000;
+    setTimeout(() => {
+        res.status(200).send('OK');
+    }, tiempoAleatorio);
+});
+
+app.get("/ejecutando", (req, res) => {
+    let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
+    tiempoAleatorio *= 1000;
+    setTimeout(() => {
+        res.status(200).send('OK');
+    }, tiempoAleatorio);
+});
+
+app.get("/finalizado", (req, res) => {
+    let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
+    tiempoAleatorio *= 1000;
+    setTimeout(() => {
+        res.status(200).send('OK');
+    }, tiempoAleatorio);
 });
 
 app.get("/clientes/:municipio", (req, res) => {
