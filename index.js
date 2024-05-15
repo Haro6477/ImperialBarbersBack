@@ -128,7 +128,7 @@ app.get("/verificando", (req, res) => {
     let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
     tiempoAleatorio *= 1000;
     setTimeout(() => {
-        res.status(200);
+        res.status(200).send({});
     }, tiempoAleatorio);
 });
 
@@ -136,7 +136,7 @@ app.get("/subiendo", (req, res) => {
     let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
     tiempoAleatorio *= 1000;
     setTimeout(() => {
-        res.status(200);
+        res.status(200).send({});
     }, tiempoAleatorio);
 });
 
@@ -144,7 +144,7 @@ app.get("/ejecutando", (req, res) => {
     let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
     tiempoAleatorio *= 1000;
     setTimeout(() => {
-        res.status(200);
+        res.status(200).send({});
     }, tiempoAleatorio);
 });
 
@@ -152,7 +152,7 @@ app.get("/finalizado", (req, res) => {
     let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
     tiempoAleatorio *= 1000;
     setTimeout(() => {
-        res.status(200);
+        res.status(200).send({});
     }, tiempoAleatorio);
 });
 
