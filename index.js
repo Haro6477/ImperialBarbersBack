@@ -6,8 +6,10 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs');
 const sharp = require('sharp');
+const postgres = require('postgres');
 
-const { PORT, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = require("./config");
+
+const { host, username, password, database, port } = require("./config");
 const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
 const options2 = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
 
@@ -37,12 +39,12 @@ const db_config = {
     ssl: 'require',
 }
 
-const sql = postgres(db_config);
+const connection = postgres(db_config);
 
 // Verificar la conexión (ejemplo de una consulta simple)
 async function testConnection() {
     try {
-      const result = await sql`SELECT NOW()`;
+      const result = await connection`SELECT NOW()`;
       console.log('Connected to PostgreSQL:', result);
     } catch (err) {
       console.error('Error connecting to PostgreSQL:', err);
@@ -1292,6 +1294,6 @@ app.put("/registrar-salida", (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-    console.log("Corriendo en el puerto " + PORT)
+app.listen(port, () => {
+    console.log("Corriendo en el puerto " + port)
 })
