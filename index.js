@@ -6,8 +6,10 @@ const multer = require('multer')
 const path = require('path')
 const fs = require('fs');
 const sharp = require('sharp');
+const postgres = require('postgres');
 
-const { PORT, DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = require("./config");
+
+const { host, username, password, database, port } = require("./config");
 const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
 const options2 = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
 
@@ -29,35 +31,28 @@ app.set('view engine', 'ejs');
 
 // Conexión db
 const db_config = {
-    host: DB_HOST,
-    user: DB_USER,
-    password: DB_PASSWORD,
-    database: DB_NAME,
-    port: DB_PORT
+    host: host,
+    username: username,
+    password: password,
+    database: database,
+    port: port,
+    ssl: 'require',
 }
 
-var connection;
+const connection = postgres(db_config);
 
-function handleDisconnect() {
-    connection = mysql.createConnection(db_config);
+// Verificar la conexión (ejemplo de una consulta simple)
+async function testConnection() {
+    try {
+      const result = await connection`SELECT NOW()`;
+      console.log('Connected to PostgreSQL:', result);
+    } catch (err) {
+      console.error('Error connecting to PostgreSQL:', err);
+    }
+  }
+  
+  testConnection();
 
-    connection.connect(function (err) {
-        if (err) {
-            console.log('error cuando se conectaba a la base de datos:', err);
-            setTimeout(handleDisconnect, 2000);
-        }
-    });
-    connection.on('error', function (err) {
-        console.log('error de base de datos: ', err);
-        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-            handleDisconnect();
-        } else {
-            throw err;
-        }
-    });
-}
-
-handleDisconnect();
 
 // Home
 app.get('/', (req, res) => {
@@ -1299,6 +1294,6 @@ app.put("/registrar-salida", (req, res) => {
 });
 
 
-app.listen(PORT, () => {
-    console.log("Corriendo en el puerto " + PORT)
+app.listen(port, () => {
+    console.log("Corriendo en el puerto " + port)
 })
