@@ -1,6 +1,5 @@
 const express = require("express");
 const cors = require("cors");
-const app = express();
 const mysql = require("mysql2");
 const multer = require('multer')
 const path = require('path')
@@ -8,6 +7,8 @@ const fs = require('fs');
 const sharp = require('sharp');
 const postgres = require('postgres');
 
+// Crear una instancia de express
+const app = express();
 
 const { host, username, password, database, port } = require("./config");
 const options = { year: 'numeric', month: '2-digit', day: '2-digit' }
@@ -43,15 +44,16 @@ const connection = postgres(db_config);
 
 // Verificar la conexión (ejemplo de una consulta simple)
 async function testConnection() {
+    console.log(db_config)
     try {
-      const result = await connection`SELECT NOW()`;
-      console.log('Connected to PostgreSQL:', result);
+        const result = await connection`SELECT NOW()`;
+        console.log('Connected to PostgreSQL:', result);
     } catch (err) {
-      console.error('Error connecting to PostgreSQL:', err);
+        console.error('Error connecting to PostgreSQL:', err);
     }
-  }
-  
-  testConnection();
+}
+
+testConnection();
 
 
 // Home

@@ -1,4 +1,4 @@
-const dotenv = require('dotenv');
+require('dotenv').config();
 
 const DB_HOST = process.env.DATABASE_HOST || "localhost"
 const DB_USER = process.env.DATABASE_USER || "root"
@@ -7,12 +7,11 @@ const DB_NAME = process.env.DATABASE_NAME || "db_kingBarberApp"
 const DB_PORT = process.env.DB_PORT || 8000
 
 // Cargar las variables de entorno
-dotenv.config();
 
 module.exports = {
   host: DB_HOST,
-  database: DB_USER,
+  username: DB_USER,
   password: DB_PASSWORD,
-  username: DB_NAME,
+  database: DB_NAME,
   port: DB_PORT,
 };
