@@ -39,12 +39,12 @@ const db_config = {
     ssl: 'require',
 }
 
-const connection = postgres(db_config);
+const sql = postgres(db_config);
 
 // Verificar la conexión (ejemplo de una consulta simple)
 async function testConnection() {
     try {
-      const result = await connection`SELECT NOW()`;
+      const result = await sql`SELECT NOW()`;
       console.log('Connected to PostgreSQL:', result);
     } catch (err) {
       console.error('Error connecting to PostgreSQL:', err);
@@ -68,7 +68,7 @@ app.get("/auth/:user/:pass", (req, res) => {
     const usuario = req.params.user
     const pass = req.params.pass
 
-    connection.query('SELECT id, puesto FROM empleados WHERE usuario=? AND pass=?', [usuario, pass],
+    sql.query('SELECT id, puesto FROM empleados WHERE usuario=? AND pass=?', [usuario, pass],
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -78,7 +78,7 @@ app.get("/auth/:user/:pass", (req, res) => {
 app.put("/cambio-municipio", (req, res) => {
     const id = req.body.id
     const municipio = req.body.municipio
-    connection.query('UPDATE empleados SET municipio=? WHERE id=?', [municipio, id],
+    sql.query('UPDATE empleados SET municipio=? WHERE id=?', [municipio, id],
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -88,7 +88,7 @@ app.put("/cambio-municipio", (req, res) => {
 // Funciones para los clientes
 app.get('/puntos/:id', (req, res) => {
     const id = req.params.id;
-    connection.query('SELECT pts, nombre, fecha FROM clientes INNER JOIN cobros ON idCliente = clientes.id WHERE clientes.id = ? ORDER BY fecha DESC LIMIT 1;', [id],
+    sql.query('SELECT pts, nombre, fecha FROM clientes INNER JOIN cobros ON idCliente = clientes.id WHERE clientes.id = ? ORDER BY fecha DESC LIMIT 1;', [id],
         (err, result) => {
             if (err) {
                 console.log(err);
@@ -102,7 +102,7 @@ app.get('/puntos/:id', (req, res) => {
 });
 
 app.get("/clientes", (req, res) => {
-    connection.query('SELECT * FROM clientes order by nombre',
+    sql.query('SELECT * FROM clientes order by nombre',
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -145,7 +145,7 @@ app.get("/finalizado", (req, res) => {
 app.get("/clientes/:municipio", (req, res) => {
     const municipio = req.params.municipio;
 
-    connection.query('SELECT * FROM clientes where municipio = ? order by nombre', municipio,
+    sql.query('SELECT * FROM clientes where municipio = ? order by nombre', municipio,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -161,14 +161,14 @@ app.post("/create-cliente", (req, res) => {
     const codigoQR = req.body.codigoQR
     const municipio = req.body.municipio
 
-    connection.query('INSERT INTO clientes(nombre,telefono,pts,genero,fechaNacimiento,codigoQR,municipio) VALUES(?,?,?,?,?,?,?)',
+    sql.query('INSERT INTO clientes(nombre,telefono,pts,genero,fechaNacimiento,codigoQR,municipio) VALUES(?,?,?,?,?,?,?)',
         [nombre, telefono, pts, genero, fechaNacimiento, codigoQR, municipio],
         (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send("Error al insertar el cliente");
             } else {
-                connection.query(
+                sql.query(
                     'SELECT * FROM clientes WHERE id = ?',
                     [result.insertId],
                     (err, rows) => {
@@ -195,7 +195,7 @@ app.put("/update-cliente", (req, res) => {
     const codigoQR = req.body.codigoQR
     const municipio = req.body.municipio
 
-    connection.query('UPDATE clientes SET nombre=?,telefono=?,pts=?,genero=?,fechaNacimiento=?,codigoQR=?,municipio=? WHERE id=?',
+    sql.query('UPDATE clientes SET nombre=?,telefono=?,pts=?,genero=?,fechaNacimiento=?,codigoQR=?,municipio=? WHERE id=?',
         [nombre, telefono, pts, genero, fechaNacimiento, codigoQR, municipio, id],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -206,7 +206,7 @@ app.put("/update-cliente", (req, res) => {
 app.delete("/delete-cliente/:id", (req, res) => {
     const id = req.params.id;
 
-    connection.query('DELETE FROM clientes WHERE id=?', id,
+    sql.query('DELETE FROM clientes WHERE id=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -216,7 +216,7 @@ app.delete("/delete-cliente/:id", (req, res) => {
 app.get("/cliente/:id", (req, res) => {
     const id = req.params.id
 
-    connection.query('SELECT * FROM clientes WHERE id=?', id,
+    sql.query('SELECT * FROM clientes WHERE id=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -224,7 +224,7 @@ app.get("/cliente/:id", (req, res) => {
 })
 
 app.get("/cuentas", (req, res) => {
-    connection.query('SELECT idCliente FROM cuentas',
+    sql.query('SELECT idCliente FROM cuentas',
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -234,7 +234,7 @@ app.get("/cuentas", (req, res) => {
 app.get("/cuentas/:idCliente", (req, res) => {
     const idCliente = req.params.idCliente
 
-    connection.query('SELECT * FROM cuentas WHERE idCliente=?', idCliente,
+    sql.query('SELECT * FROM cuentas WHERE idCliente=?', idCliente,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -246,14 +246,14 @@ app.post("/create-cuenta", (req, res) => {
     const idCobro = req.body.idCobro
     const descripcion = req.body.descripcion
 
-    connection.query('INSERT INTO cuentas(idCliente,idCobro,descripcion) VALUES(?,?,?)',
+    sql.query('INSERT INTO cuentas(idCliente,idCobro,descripcion) VALUES(?,?,?)',
         [idCliente, idCobro, descripcion],
         (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send("Error al insertar cuenta");
             } else {
-                connection.query(
+                sql.query(
                     'SELECT * FROM cuentas WHERE id = ?',
                     [result.insertId],
                     (err, rows) => {
@@ -274,7 +274,7 @@ app.put("/update-cuenta", (req, res) => {
     const idCuenta = req.body.idCuenta
     const estatus = req.body.estatus
 
-    connection.query('UPDATE cuentas SET estatus=? WHERE idCuenta=?',
+    sql.query('UPDATE cuentas SET estatus=? WHERE idCuenta=?',
         [estatus, idCuenta],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -284,7 +284,7 @@ app.put("/update-cuenta", (req, res) => {
 
 // Funciones para los empleados
 app.get("/empleados", (req, res) => {
-    connection.query('SELECT id, usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, color, municipio FROM empleados WHERE id <> 7 order by nombre',
+    sql.query('SELECT id, usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, color, municipio FROM empleados WHERE id <> 7 order by nombre',
         (err, rows) => {
             if (err) { console.log(err) }
             else {
@@ -296,7 +296,7 @@ app.get("/empleados", (req, res) => {
 
 app.get("/empleados/:municipio", (req, res) => {
     const municipio = req.params.municipio
-    connection.query('SELECT id, usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, color, municipio FROM empleados WHERE municipio = ? order by nombre', municipio,
+    sql.query('SELECT id, usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, color, municipio FROM empleados WHERE municipio = ? order by nombre', municipio,
         (err, rows) => {
             if (err) { console.log(err) }
             else {
@@ -345,7 +345,7 @@ app.get("/servicios-semana-all/:id", (req, res) => {
         + ' INNER JOIN servicios AS s ON ds.idServicio = s.id'
         + " WHERE fecha < '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND ds.idBarber = " + id
         + ' order by fecha desc'
-    connection.query(expresion,
+    sql.query(expresion,
         (err, rows) => {
             if (err) { console.log(err) }
             else {
@@ -365,7 +365,7 @@ app.get("/servicios-semana", (req, res) => {
         + ' INNER JOIN servicios AS s ON ds.idServicio = s.id'
         + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122'"
         + ' order by fecha desc'
-    connection.query(expresion,
+    sql.query(expresion,
         (err, rows) => {
             if (err) { console.log(err) }
             else {
@@ -387,7 +387,7 @@ app.get("/servicios-semana/:id", (req, res) => {
         + ' INNER JOIN servicios AS s ON ds.idServicio = s.id'
         + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND ds.idBarber = " + id
         + ' order by fecha desc'
-    connection.query(expresion,
+    sql.query(expresion,
         (err, rows) => {
             if (err) { console.log(err) }
             else {
@@ -408,7 +408,7 @@ app.get("/productos-semana-all/:id", (req, res) => {
         + ' INNER JOIN productos AS p ON dp.idProducto = p.id'
         + " WHERE fecha < '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND dp.idBarber = " + id
         + ' order by fecha desc'
-    connection.query(expresion,
+    sql.query(expresion,
         (err, rows) => {
             if (err) { console.log(err) }
             else {
@@ -428,7 +428,7 @@ app.get("/productos-semana", (req, res) => {
         + ' INNER JOIN productos AS p ON dp.idProducto = p.id'
         + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122'"
         + ' order by fecha desc'
-    connection.query(expresion,
+    sql.query(expresion,
         (err, rows) => {
             if (err) { console.log(err) }
             else {
@@ -449,7 +449,7 @@ app.get("/productos-semana/:id", (req, res) => {
         + ' INNER JOIN productos AS p ON dp.idProducto = p.id'
         + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND dp.idBarber = " + id
         + ' order by fecha desc'
-    connection.query(expresion,
+    sql.query(expresion,
         (err, rows) => {
             if (err) { console.log(err) }
             else {
@@ -460,7 +460,7 @@ app.get("/productos-semana/:id", (req, res) => {
 
 app.get("/fotos-empleados", (req, res) => {
 
-    connection.query('SELECT id, foto FROM empleados',
+    sql.query('SELECT id, foto FROM empleados',
         (err, rows) => {
             if (err) { alert(err) }
             else {
@@ -477,7 +477,7 @@ app.get("/fotos-empleados", (req, res) => {
 
 app.get("/foto-empleado/:id", (req, res) => {
     const id = req.params.id
-    connection.query('SELECT id, foto FROM empleados WHERE id = ?', id,
+    sql.query('SELECT id, foto FROM empleados WHERE id = ?', id,
         (err, row) => {
             if (err) { console.log(err) }
             else {
@@ -512,14 +512,14 @@ app.post("/create-empleado", (req, res) => {
     const foto = req.body.foto
     const municipio = req.body.municipio
 
-    connection.query('INSERT INTO empleados(usuario,pass,nombre,telefono,correo,fechaNacimiento,fechaInicio,puesto,estatus,foto,municipio) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+    sql.query('INSERT INTO empleados(usuario,pass,nombre,telefono,correo,fechaNacimiento,fechaInicio,puesto,estatus,foto,municipio) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
         [usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, foto, municipio],
         (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send("Error al insertar el empleado");
             } else {
-                connection.query(
+                sql.query(
                     'SELECT * FROM empleados WHERE id = ?',
                     [result.insertId],
                     (err, rows) => {
@@ -549,7 +549,7 @@ app.put("/update-empleado", (req, res) => {
     const estatus = req.body.estatus
     const municipio = req.body.municipio
 
-    connection.query('UPDATE empleados SET usuario=?,pass=?,nombre=?,telefono=?,correo=?,fechaNacimiento=?,fechaInicio=?,puesto=?,estatus=?,municipio=? WHERE id=?',
+    sql.query('UPDATE empleados SET usuario=?,pass=?,nombre=?,telefono=?,correo=?,fechaNacimiento=?,fechaInicio=?,puesto=?,estatus=?,municipio=? WHERE id=?',
         [usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, municipio, id],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -566,7 +566,7 @@ app.put("/update-empleado-datos", (req, res) => {
     const color = req.body.color
     const municipio = req.body.municipio
 
-    connection.query('UPDATE empleados SET usuario=?,nombre=?,telefono=?,correo=?,fechaNacimiento=?, color=?, municipio=? WHERE id=?',
+    sql.query('UPDATE empleados SET usuario=?,nombre=?,telefono=?,correo=?,fechaNacimiento=?, color=?, municipio=? WHERE id=?',
         [usuario, nombre, telefono, correo, fechaNacimiento, color, municipio, id],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -576,7 +576,7 @@ app.put("/update-empleado-datos", (req, res) => {
 app.put("/update-password", (req, res) => {
     const id = req.body.id
     const pass = req.body.pass
-    connection.query('UPDATE empleados SET pass=? WHERE id=?',
+    sql.query('UPDATE empleados SET pass=? WHERE id=?',
         [pass, id],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -587,7 +587,7 @@ app.put("/update-password", (req, res) => {
 app.put("/update-empleado-municipio", (req, res) => {
     const idBarber = req.body.id
     const municipio = req.body.municipio
-    connection.query('UPDATE empleados SET municipio=? WHERE id=?',
+    sql.query('UPDATE empleados SET municipio=? WHERE id=?',
         [municipio, idBarber],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -622,7 +622,7 @@ app.put('/update-foto-empleado', fileUpload, (req, res) => {
         .toFormat(format)
         .toBuffer()
         .then(data => {
-            connection.query('UPDATE empleados set foto = ? WHERE id = ?', [data, id], (err, result) => {
+            sql.query('UPDATE empleados set foto = ? WHERE id = ?', [data, id], (err, result) => {
                 if (err) return res.status(500).send('Error al actualizar foto')
                 else res.send("Foto actualizada\nActualizar para mostrar cambios")
             })
@@ -637,7 +637,7 @@ app.put('/update-foto-empleado', fileUpload, (req, res) => {
 app.delete("/delete-empleado/:id", (req, res) => {
     const id = req.params.id;
 
-    connection.query('DELETE FROM empleados WHERE id=?', id,
+    sql.query('DELETE FROM empleados WHERE id=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -647,7 +647,7 @@ app.delete("/delete-empleado/:id", (req, res) => {
 app.get("/empleado/:id", (req, res) => {
     const id = req.params.id
 
-    connection.query('SELECT usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, fechaInicio, puesto, estatus, color, municipio FROM empleados WHERE id=?', id,
+    sql.query('SELECT usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, fechaInicio, puesto, estatus, color, municipio FROM empleados WHERE id=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -658,7 +658,7 @@ app.get("/empleado/:id", (req, res) => {
 app.get("/servicios/:municipio", (req, res) => {
     const municipio = req.params.municipio
 
-    connection.query('SELECT * FROM servicios where municipio = ? order by nombre', municipio,
+    sql.query('SELECT * FROM servicios where municipio = ? order by nombre', municipio,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -672,14 +672,14 @@ app.post("/create-servicio", (req, res) => {
     const pts = req.body.pts
     const municipio = req.body.municipio
 
-    connection.query('INSERT INTO servicios(nombre,descripcion,precio,pts,municipio) VALUES(?,?,?,?,?)',
+    sql.query('INSERT INTO servicios(nombre,descripcion,precio,pts,municipio) VALUES(?,?,?,?,?)',
         [nombre, descripcion, precio, pts, municipio],
         (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send("Error al insertar el servicio");
             } else {
-                connection.query(
+                sql.query(
                     'SELECT * FROM servicios WHERE id = ?',
                     [result.insertId],
                     (err, rows) => {
@@ -703,14 +703,14 @@ app.put("/update-servicio", (req, res) => {
     const precio = req.body.precio
     const pts = req.body.pts
 
-    connection.query('UPDATE servicios SET nombre=?,descripcion=?,precio=?,pts=? WHERE id=?',
+    sql.query('UPDATE servicios SET nombre=?,descripcion=?,precio=?,pts=? WHERE id=?',
         [nombre, descripcion, precio, pts, id],
         (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send("Error al actualizar el servicio");
             } else {
-                connection.query(
+                sql.query(
                     'SELECT * FROM servicios WHERE id = ?',
                     [id],
                     (err, rows) => {
@@ -730,7 +730,7 @@ app.put("/update-servicio", (req, res) => {
 app.delete("/delete-servicio/:id", (req, res) => {
     const id = req.params.id;
 
-    connection.query('DELETE FROM servicios WHERE id=?', id,
+    sql.query('DELETE FROM servicios WHERE id=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -740,7 +740,7 @@ app.delete("/delete-servicio/:id", (req, res) => {
 app.get("/servicio/:id", (req, res) => {
     const id = req.params.id
 
-    connection.query('SELECT * FROM servicios WHERE id=?', id,
+    sql.query('SELECT * FROM servicios WHERE id=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -751,7 +751,7 @@ app.get("/servicio/:id", (req, res) => {
 app.get("/productos/:municipio", (req, res) => {
     const municipio = req.params.municipio
 
-    connection.query('SELECT * FROM productos where municipio = ? order by nombre', municipio,
+    sql.query('SELECT * FROM productos where municipio = ? order by nombre', municipio,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -772,14 +772,14 @@ app.post("/create-producto", (req, res) => {
     const pts = req.body.pts
     const imagen = req.body.imagen
     const municipio = req.body.municipio
-    connection.query('INSERT INTO productos(nombre,marca,linea,contenido,enVenta,suministros,almacen,descripcion,costo,precio,pts,imagen,municipio) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
+    sql.query('INSERT INTO productos(nombre,marca,linea,contenido,enVenta,suministros,almacen,descripcion,costo,precio,pts,imagen,municipio) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
         [nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio],
         (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send("Error al insertar el producto");
             } else {
-                connection.query(
+                sql.query(
                     'SELECT * FROM productos WHERE id = ?',
                     [result.insertId],
                     (err, rows) => {
@@ -811,14 +811,14 @@ app.put("/update-producto", (req, res) => {
     const pts = req.body.pts
     const imagen = req.body.imagen
 
-    connection.query('UPDATE productos SET nombre=?,marca=?,linea=?,contenido=?,enVenta=?,suministros=?,almacen=?,descripcion=?,costo=?,precio=?,pts=?,imagen=? WHERE id=?',
+    sql.query('UPDATE productos SET nombre=?,marca=?,linea=?,contenido=?,enVenta=?,suministros=?,almacen=?,descripcion=?,costo=?,precio=?,pts=?,imagen=? WHERE id=?',
         [nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen, id],
         (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send("Error al actualizar el producto");
             } else {
-                connection.query(
+                sql.query(
                     'SELECT * FROM productos WHERE id = ?',
                     [id],
                     (err, rows) => {
@@ -838,7 +838,7 @@ app.put("/update-producto", (req, res) => {
 app.delete("/delete-producto/:id", (req, res) => {
     const id = req.params.id;
 
-    connection.query('DELETE FROM productos WHERE id=?', id,
+    sql.query('DELETE FROM productos WHERE id=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -848,7 +848,7 @@ app.delete("/delete-producto/:id", (req, res) => {
 app.get("/producto/:id", (req, res) => {
     const id = req.params.id
 
-    connection.query('SELECT * FROM productos WHERE id=?', id,
+    sql.query('SELECT * FROM productos WHERE id=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -857,7 +857,7 @@ app.get("/producto/:id", (req, res) => {
 
 // Permisos
 app.get("/permisos", (req, res) => {
-    connection.query('SELECT * FROM permisos order by permiso',
+    sql.query('SELECT * FROM permisos order by permiso',
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -867,7 +867,7 @@ app.get("/permisos", (req, res) => {
 app.get("/permisos-usuario/:id", (req, res) => {
     const id = req.params.id
 
-    connection.query('SELECT permiso FROM permisos WHERE idEmpleado=?', id,
+    sql.query('SELECT permiso FROM permisos WHERE idEmpleado=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -880,7 +880,7 @@ app.post("/create-permisos", (req, res) => {
     permisos.forEach(permiso => {
         values += '("' + permiso.permiso + '",' + permiso.idEmpleado + '),'
     });
-    connection.query("INSERT INTO permisos(permiso, idEmpleado) VALUES " + values.slice(0, -1),
+    sql.query("INSERT INTO permisos(permiso, idEmpleado) VALUES " + values.slice(0, -1),
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -890,7 +890,7 @@ app.post("/create-permisos", (req, res) => {
 app.delete("/delete-permisos/:id", (req, res) => {
     const id = req.params.id;
 
-    connection.query('DELETE FROM permisos WHERE idEmpleado=?', id,
+    sql.query('DELETE FROM permisos WHERE idEmpleado=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -907,7 +907,7 @@ app.get("/cobros/:municipio", (req, res) => {
         + 'inner join clientes as c on v.idCliente = c.id '
         + 'inner join empleados as b on v.idBarber = b.id '
         + 'inner join empleados as s on v.idCobrador = s.id WHERE v.municipio = ' + municipio + ' order by fecha desc LIMIT 300'
-    connection.query(query,
+    sql.query(query,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -922,7 +922,7 @@ app.get("/cobros-hoy/:municipio", (req, res) => {
         + 'inner join clientes as c on v.idCliente = c.id '
         + 'inner join empleados as b on v.idBarber = b.id '
         + "inner join empleados as s on v.idCobrador = s.id WHERE DATE(fecha) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) and v.municipio = " + municipio + " order by fecha desc"
-    connection.query(query,
+    sql.query(query,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -936,7 +936,7 @@ app.get("/cobro/:id", (req, res) => {
         + 'inner join clientes as c on v.idCliente = c.id '
         + 'inner join empleados as b on v.idBarber = b.id '
         + 'inner join empleados as s on v.idCobrador = s.id WHERE v.id = ?'
-    connection.query(query, id,
+    sql.query(query, id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -956,7 +956,7 @@ app.post("/create-cobro", (req, res) => {
     const pagoTarjeta = req.body.pagoTarjeta
     const pagoPuntos = req.body.pagoPuntos
     const municipio = req.body.municipio
-    connection.query('INSERT INTO cobros(idCliente,total,descuento,subtotal,totalPuntos,metodoPago,idBarber,idCobrador,pagoEfectivo,pagoTarjeta,pagoPuntos,municipio) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
+    sql.query('INSERT INTO cobros(idCliente,total,descuento,subtotal,totalPuntos,metodoPago,idBarber,idCobrador,pagoEfectivo,pagoTarjeta,pagoPuntos,municipio) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
         [idCliente, total, descuento, subtotal, totalPuntos, metodoPago, idBarber, idCobrador, pagoEfectivo, pagoTarjeta, pagoPuntos, municipio],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -969,7 +969,7 @@ app.get("/caja/:municipio", (req, res) => {
     const municipio = req.params.municipio
 
     const query = 'SELECT * FROM caja WHERE municipio = ?'
-    connection.query(query, municipio,
+    sql.query(query, municipio,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -982,7 +982,7 @@ app.put("/update-caja", (req, res) => {
     const dineroElectronico = req.body.dineroElectronico
     const puntos = req.body.puntos
 
-    connection.query('UPDATE caja SET efectivo=efectivo+?, dineroElectronico=dineroElectronico+?, puntos=puntos+? WHERE id=?',
+    sql.query('UPDATE caja SET efectivo=efectivo+?, dineroElectronico=dineroElectronico+?, puntos=puntos+? WHERE id=?',
         [efectivo, dineroElectronico, puntos, id],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -995,14 +995,14 @@ app.put("/update-cliente-pts", (req, res) => {
     const id = req.body.id
     const pts = req.body.pts
 
-    connection.query('UPDATE clientes SET pts=pts+? WHERE id=?',
+    sql.query('UPDATE clientes SET pts=pts+? WHERE id=?',
         [pts, id],
         (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send("Error al actualizar puntos");
             } else {
-                connection.query(
+                sql.query(
                     'SELECT * FROM clientes WHERE id = ?',
                     [id],
                     (err, rows) => {
@@ -1023,7 +1023,7 @@ app.put("/update-inventario", (req, res) => {
     const id = req.body.id
     const cantidad = req.body.cantidad
 
-    connection.query('UPDATE productos SET enVenta=enVenta+? WHERE id=?',
+    sql.query('UPDATE productos SET enVenta=enVenta+? WHERE id=?',
         [cantidad, id],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -1036,14 +1036,14 @@ app.post("/create-movimiento", (req, res) => {
     const cantidad = req.body.cantidad
     const idUsuario = req.body.idUsuario
     const municipio = req.body.municipio
-    connection.query('INSERT INTO movimientos(concepto,cantidad,idUsuario,municipio) VALUES(?,?,?,?)',
+    sql.query('INSERT INTO movimientos(concepto,cantidad,idUsuario,municipio) VALUES(?,?,?,?)',
         [concepto, cantidad, idUsuario, municipio],
         (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send("Error al insertar movimiento");
             } else {
-                connection.query(
+                sql.query(
                     "SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio FROM movimientos as m INNER JOIN empleados on idUsuario = empleados.id WHERE m.id = ?",
 
                     [result.insertId],
@@ -1064,7 +1064,7 @@ app.post("/create-movimiento", (req, res) => {
 app.get("/movimientos/:municipio", (req, res) => {
     const municipio = req.params.municipio
     const query = "SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio FROM movimientos as m INNER JOIN empleados on idUsuario = empleados.id WHERE DATE(fechaHora) != DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) and m.municipio = ?"
-    connection.query(query, municipio,
+    sql.query(query, municipio,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -1074,7 +1074,7 @@ app.get("/movimientos-hoy/:municipio", (req, res) => {
     const municipio = req.params.municipio
 
     const query = "SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio FROM movimientos as m INNER JOIN empleados on idUsuario = empleados.id WHERE DATE(fechaHora) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) and m.municipio = ?"
-    connection.query(query, municipio,
+    sql.query(query, municipio,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -1086,7 +1086,7 @@ app.get("/movimientos-hoy/:municipio", (req, res) => {
 app.get("/detalles-servicio/:id", (req, res) => {
     const id = req.params.id
 
-    connection.query('SELECT d.id, cantidad, s.nombre, precioActual, puntosActual, e.nombre as barber FROM detallescobroservicios as d inner join servicios as s on idServicio = s.id left join empleados as e on idBarber = e.id WHERE idCobro=?', id,
+    sql.query('SELECT d.id, cantidad, s.nombre, precioActual, puntosActual, e.nombre as barber FROM detallescobroservicios as d inner join servicios as s on idServicio = s.id left join empleados as e on idBarber = e.id WHERE idCobro=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -1101,7 +1101,7 @@ app.post("/create-detalle-servicio", (req, res) => {
     const puntosActual = req.body.puntosActual
     const idBarber = req.body.idBarber
 
-    connection.query('INSERT INTO detallescobroservicios(idCobro, idServicio, cantidad, precioActual, puntosActual, idBarber) VALUES(?,?,?,?,?,?)',
+    sql.query('INSERT INTO detallescobroservicios(idCobro, idServicio, cantidad, precioActual, puntosActual, idBarber) VALUES(?,?,?,?,?,?)',
         [idCobro, idServicio, cantidad, precioActual, puntosActual, idBarber],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -1112,7 +1112,7 @@ app.post("/create-detalle-servicio", (req, res) => {
 app.get("/detalles-producto/:id", (req, res) => {
     const id = req.params.id
 
-    connection.query('SELECT d.id, cantidad, p.nombre, precioActual, puntosActual, e.nombre as barber FROM detallescobroproductos as d inner join productos as p on idProducto = p.id left join empleados as e on idBarber = e.id WHERE idCobro=?', id,
+    sql.query('SELECT d.id, cantidad, p.nombre, precioActual, puntosActual, e.nombre as barber FROM detallescobroproductos as d inner join productos as p on idProducto = p.id left join empleados as e on idBarber = e.id WHERE idCobro=?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -1127,7 +1127,7 @@ app.post("/create-detalle-producto", (req, res) => {
     const puntosActual = req.body.puntosActual
     const idBarber = req.body.idBarber
 
-    connection.query('INSERT INTO detallescobroproductos(idCobro, idProducto, cantidad, precioActual, puntosActual, idBarber) VALUES(?,?,?,?,?,?)',
+    sql.query('INSERT INTO detallescobroproductos(idCobro, idProducto, cantidad, precioActual, puntosActual, idBarber) VALUES(?,?,?,?,?,?)',
         [idCobro, idProducto, cantidad, precioActual, puntosActual, idBarber],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -1144,7 +1144,7 @@ app.post("/create-reporte", (req, res) => {
     const montoPts = req.body.montoPts
     const municipio = req.body.municipio
 
-    connection.query('INSERT INTO reportes(idBarber, montoEfectivo, montoElectronico, montoPts, municipio) VALUES(?,?,?,?,?)',
+    sql.query('INSERT INTO reportes(idBarber, montoEfectivo, montoElectronico, montoPts, municipio) VALUES(?,?,?,?,?)',
         [idBarber, montoEfectivo, montoElectronico, montoPts, municipio],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -1155,7 +1155,7 @@ app.post("/create-reporte", (req, res) => {
 app.get("/reporte-hoy/:municipio", (req, res) => {
     const municipio = req.params.municipio
 
-    connection.query("SELECT id FROM reportes WHERE DATE(fecha) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) AND municipio = " + municipio,
+    sql.query("SELECT id FROM reportes WHERE DATE(fecha) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) AND municipio = " + municipio,
         (err, result) => {
             err ? console.log(err) : res.send(result[0]);
         }
@@ -1164,7 +1164,7 @@ app.get("/reporte-hoy/:municipio", (req, res) => {
 
 //Horarios
 app.get("/horarios", (req, res) => {
-    connection.query('SELECT * FROM horarios',
+    sql.query('SELECT * FROM horarios',
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -1172,7 +1172,7 @@ app.get("/horarios", (req, res) => {
 })
 app.get("/horario/:id", (req, res) => {
     const id = req.params.id
-    connection.query('SELECT * FROM horarios WHERE idBarber = ?', id,
+    sql.query('SELECT * FROM horarios WHERE idBarber = ?', id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -1181,7 +1181,7 @@ app.get("/horario/:id", (req, res) => {
 
 app.post("/create-horario", (req, res) => {
     const idBarber = req.body.idBarber
-    connection.query('INSERT INTO horarios(idBarber) VALUES(?)',
+    sql.query('INSERT INTO horarios(idBarber) VALUES(?)',
         [idBarber],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -1206,7 +1206,7 @@ app.put("/update-horario", (req, res) => {
     const domIn = req.body.domIn
     const domOut = req.body.domOut
 
-    connection.query('UPDATE horarios SET lunIn=?, lunOut=?, marIn=?, marOut=?, mieIn=?,mieOut=?,jueIn=?,jueOut=?,vieIn=?,vieOut=?,sabIn=?,sabOut=?,domIn=?,domOut=? WHERE idBarber = ?',
+    sql.query('UPDATE horarios SET lunIn=?, lunOut=?, marIn=?, marOut=?, mieIn=?,mieOut=?,jueIn=?,jueOut=?,vieIn=?,vieOut=?,sabIn=?,sabOut=?,domIn=?,domOut=? WHERE idBarber = ?',
         [lunIn, lunOut, marIn, marOut, mieIn, mieOut, jueIn, jueOut, vieIn, vieOut, sabIn, sabOut, domIn, domOut, idBarber],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -1218,7 +1218,7 @@ app.put("/update-horario", (req, res) => {
 app.get("/chequeos", (req, res) => {
     const query = 'SELECT dia, entrada, comidaInicio, comidaFin, salida, empleados.nombre from chequeos '
         + 'inner join empleados on idBarber = empleados.id order by dia desc LIMIT 50'
-    connection.query(query, (err, result) => {
+    sql.query(query, (err, result) => {
         err ? console.log(err) : res.send(result);
     }
     );
@@ -1227,7 +1227,7 @@ app.get("/chequeos", (req, res) => {
 app.get("/chequeos-hoy", (req, res) => {
     const query = 'SELECT dia, entrada, comidaInicio, comidaFin, salida, empleados.nombre from chequeos '
         + "inner join empleados on idBarber = empleados.id WHERE DATE(dia) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) order by dia desc"
-    connection.query(query, (err, result) => {
+    sql.query(query, (err, result) => {
         err ? console.log(err) : res.send(result);
     }
     );
@@ -1235,7 +1235,7 @@ app.get("/chequeos-hoy", (req, res) => {
 
 app.get("/chequeo/:id", (req, res) => {
     const id = req.params.id
-    connection.query("SELECT * FROM chequeos WHERE dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) AND idBarber = ?", id,
+    sql.query("SELECT * FROM chequeos WHERE dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) AND idBarber = ?", id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -1244,7 +1244,7 @@ app.get("/chequeo/:id", (req, res) => {
 
 app.get("/descanso/:id", (req, res) => {
     const id = req.params.id
-    connection.query("SELECT comidaInicio, comidaFin from chequeos WHERE dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) AND idBarber = ?", id,
+    sql.query("SELECT comidaInicio, comidaFin from chequeos WHERE dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) AND idBarber = ?", id,
         (err, result) => {
             err ? console.log(err) : res.send(result);
         }
@@ -1255,7 +1255,7 @@ app.post("/create-chequeos", (req, res) => {
     const idBarber = req.body.idBarber
     const municipio = req.body.municipio
 
-    connection.query('INSERT INTO chequeos(idBarber, municipio) VALUES(?,?)',
+    sql.query('INSERT INTO chequeos(idBarber, municipio) VALUES(?,?)',
         [idBarber, municipio],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -1265,7 +1265,7 @@ app.post("/create-chequeos", (req, res) => {
 app.put("/iniciar-descanso", (req, res) => {
     const idBarber = req.body.idBarber
 
-    connection.query("UPDATE chequeos SET comidaInicio = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))  WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
+    sql.query("UPDATE chequeos SET comidaInicio = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))  WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
         [idBarber],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -1275,7 +1275,7 @@ app.put("/iniciar-descanso", (req, res) => {
 app.put("/finalizar-descanso", (req, res) => {
     const idBarber = req.body.idBarber
 
-    connection.query("UPDATE chequeos SET comidaFin = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
+    sql.query("UPDATE chequeos SET comidaFin = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
         [idBarber],
         (err, result) => {
             err ? console.log(err) : res.send(result);
@@ -1285,7 +1285,7 @@ app.put("/finalizar-descanso", (req, res) => {
 app.put("/registrar-salida", (req, res) => {
     const idBarber = req.body.idBarber
 
-    connection.query("UPDATE chequeos SET salida = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
+    sql.query("UPDATE chequeos SET salida = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
         [idBarber],
         (err, result) => {
             err ? console.log(err) : res.send(result);
