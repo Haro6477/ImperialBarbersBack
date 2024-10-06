@@ -36,6 +36,7 @@ const db_config = {
     username: username,
     password: password,
     database: database,
+    port: port,
     ssl: 'require',
 }
 
@@ -1293,3 +1294,8 @@ app.put("/registrar-salida", (req, res) => {
         }
     );
 });
+
+
+app.listen(port, () => {
+    console.log("Corriendo en el puerto " + port)
+})
