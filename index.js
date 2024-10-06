@@ -56,7 +56,7 @@ async function testConnection() {
 
 // Home
 app.get('/', (req, res) => {
-    res.send('¡Bienvenido a mi aplicación!');
+    res.send('¡Bienvenido Barber!');
 });
 
 app.get('/animation', (req, res) => {
