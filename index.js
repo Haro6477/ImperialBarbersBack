@@ -44,7 +44,6 @@ const connection = postgres(db_config);
 
 // Verificar la conexión (ejemplo de una consulta simple)
 async function testConnection() {
-    console.log(db_config)
     try {
         const result = await connection`SELECT NOW()`;
         console.log('Connected to PostgreSQL:', result);
@@ -58,7 +57,8 @@ testConnection();
 
 // Home
 app.get('/', (req, res) => {
-    res.send('¡Bienvenido a mi aplicación!');
+    const { password, ...rest } = db_config;
+    res.send(`¡Bienvenido Barber!\n\nDatos de la conexión:\n${rest}`);
 });
 
 app.get('/animation', (req, res) => {
