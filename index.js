@@ -33,74 +33,73 @@ app.set('view engine', 'ejs');
 // Conexión db
 const db_config = {
     host: host,
-    username: username,
+    user: username,
     password: password,
     database: database,
     port: port,
-    ssl: 'require',
-}
-
-const connection = postgres(db_config);
-
-// Verificar la conexión (ejemplo de una consulta simple)
-async function testConnection() {
-    try {
-        const result = await connection`SELECT NOW()`;
-        console.log('Connected to PostgreSQL:', result);
-    } catch (err) {
-        console.error('Error connecting to PostgreSQL:', err);
+    ssl: {
+        rejectUnauthorized: false
     }
 }
 
-testConnection();
-
+const sql = postgres(db_config);
 
 // Home
 app.get('/', (req, res) => {
-    const { password, ...rest } = db_config;
-    res.send(`¡Bienvenido Barber!\n\nDatos de la conexión:\n${rest}`);
+    const { password, ...rest } = sql.options;
+    res.send(`¡Bienvenido Barber!\n\nDatos de la conexión:\n${JSON.stringify(rest)}`);
 });
+
 
 app.get('/animation', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'animation.html'));
 });
 
 // Función para autenticación
-app.get("/auth/:user/:pass", (req, res) => {
+app.get("/auth/:user/:pass", async (req, res) => {
     const usuario = req.params.user
     const pass = req.params.pass
 
-    sql.query('SELECT id, puesto FROM empleados WHERE usuario=? AND pass=?', [usuario, pass],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
+    try {
+        const result = await sql`SELECT id, puesto FROM empleados 
+            WHERE usuario = ${usuario} 
+              AND pass = ${pass}
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send('Error interno del servidor');
+    }
 })
 
-app.put("/cambio-municipio", (req, res) => {
+app.put("/cambio-municipio", async (req, res) => {
     const id = req.body.id
     const municipio = req.body.municipio
-    sql.query('UPDATE empleados SET municipio=? WHERE id=?', [municipio, id],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    )
+    try {
+        const result = await sql`
+            UPDATE empleados 
+            SET municipio = ${municipio} 
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send('Error interno del servidor');
+    }
 })
 
 // Funciones para los clientes
-app.get('/puntos/:id', (req, res) => {
+app.get('/puntos/:id', async (req, res) => {
     const id = req.params.id;
-    sql.query('SELECT pts, nombre, fecha FROM clientes INNER JOIN cobros ON idCliente = clientes.id WHERE clientes.id = ? ORDER BY fecha DESC LIMIT 1;', [id],
-        (err, result) => {
-            if (err) {
-                console.log(err);
-            } else {
-                let data = result[0];
-                data.fecha = new Date(data.fecha).toLocaleDateString('es-mx', options2)
-                res.render('puntos', { data: data });
-            }
-        }
-    );
+
+    try {
+        const result = await sql`SELECT pts, nombre, fecha FROM clientes INNER JOIN cobros ON idCliente = clientes.id WHERE clientes.id = ${id} ORDER BY fecha DESC LIMIT 1`;
+        res.send(result)
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send('Error interno del servidor');
+    }
 });
 
 app.get("/clientes", (req, res) => {
@@ -111,38 +110,6 @@ app.get("/clientes", (req, res) => {
     );
 });
 
-
-app.get("/verificando", (req, res) => {
-    let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
-    tiempoAleatorio *= 1000;
-    setTimeout(() => {
-        res.status(200).send({});
-    }, tiempoAleatorio);
-});
-
-app.get("/subiendo", (req, res) => {
-    let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
-    tiempoAleatorio *= 1000;
-    setTimeout(() => {
-        res.status(200).send({});
-    }, tiempoAleatorio);
-});
-
-app.get("/ejecutando", (req, res) => {
-    let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
-    tiempoAleatorio *= 1000;
-    setTimeout(() => {
-        res.status(200).send({});
-    }, tiempoAleatorio);
-});
-
-app.get("/finalizado", (req, res) => {
-    let tiempoAleatorio = Math.floor(Math.random() * 5) + 1;
-    tiempoAleatorio *= 1000;
-    setTimeout(() => {
-        res.status(200).send({});
-    }, tiempoAleatorio);
-});
 
 app.get("/clientes/:municipio", (req, res) => {
     const municipio = req.params.municipio;
