@@ -46,7 +46,7 @@ const sql = postgres(db_config);
 
 // Home
 app.get('/', (req, res) => {
-    const { password, ...rest } = sql.options;
+    const { pass, ...rest } = sql.options;
     res.send(`¡Bienvenido Barber!\n\nDatos de la conexión:\n${JSON.stringify(rest)}`);
 });
 
@@ -156,7 +156,7 @@ app.post("/create-cliente", async (req, res) => {
             VALUES (${nombre}, ${telefono}, ${pts}, ${genero}, ${fechaNacimiento}, ${codigoQR}, ${municipio})
             RETURNING *
         `;
-        
+
         res.send(result[0]); // Enviar los datos del nuevo cliente
     } catch (err) {
         console.error('Error executing query', err.stack);
@@ -347,267 +347,276 @@ const formatearFecha = (fecha) => {
     return fechaFormateada
 }
 
-app.get("/servicios-semana-all/:id", (req, res) => {
-    const id = req.params.id
-    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
-    const lunes = new Date(now + 'T00:00:00')
-    var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
-    lunes.setDate(lunes.getDate() - nDay);
-    const expresion = 'SELECT ds.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, ds.precioActual, ds.cantidad, s.nombre AS servicio FROM detallescobroservicios AS ds '
-        + ' INNER JOIN cobros AS c ON ds.idCobro = c.id'
-        + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
-        + ' INNER JOIN empleados AS e ON ds.idBarber = e.id'
-        + ' INNER JOIN servicios AS s ON ds.idServicio = s.id'
-        + " WHERE fecha < '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND ds.idBarber = " + id
-        + ' order by fecha desc'
-    sql.query(expresion,
-        (err, rows) => {
-            if (err) { console.log(err) }
-            else {
-                res.send(rows)
-            }
-        })
-})
-app.get("/servicios-semana", (req, res) => {
-    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
-    const lunes = new Date(now + 'T00:00:00')
-    var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
-    lunes.setDate(lunes.getDate() - nDay);
-    const expresion = 'SELECT ds.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, ds.precioActual, ds.cantidad, s.nombre AS servicio FROM detallescobroservicios AS ds '
-        + ' INNER JOIN cobros AS c ON ds.idCobro = c.id'
-        + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
-        + ' INNER JOIN empleados AS e ON ds.idBarber = e.id'
-        + ' INNER JOIN servicios AS s ON ds.idServicio = s.id'
-        + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122'"
-        + ' order by fecha desc'
-    sql.query(expresion,
-        (err, rows) => {
-            if (err) { console.log(err) }
-            else {
-                res.send(rows)
-            }
-        })
-})
-app.get("/servicios-semana/:id", (req, res) => {
-    const id = req.params.id
-    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
-    const lunes = new Date(now + 'T00:00:00')
+app.get("/servicios-semana-all/:id", async (req, res) => {
+    const id = req.params.id;
+    const now = new Date().toLocaleDateString('es-MX', options).split('/').reverse().join('-');
+    const lunes = new Date(now + 'T00:00:00');
     var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
     lunes.setDate(lunes.getDate() - nDay);
 
-    const expresion = 'SELECT ds.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, ds.precioActual, ds.cantidad, s.nombre AS servicio FROM detallescobroservicios AS ds '
-        + ' INNER JOIN cobros AS c ON ds.idCobro = c.id'
-        + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
-        + ' INNER JOIN empleados AS e ON ds.idBarber = e.id'
-        + ' INNER JOIN servicios AS s ON ds.idServicio = s.id'
-        + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND ds.idBarber = " + id
-        + ' order by fecha desc'
-    sql.query(expresion,
-        (err, rows) => {
-            if (err) { console.log(err) }
-            else {
-                res.send(rows)
-            }
-        })
-})
-app.get("/productos-semana-all/:id", (req, res) => {
-    const id = req.params.id
-    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
-    const lunes = new Date(now + 'T00:00:00')
-    var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
-    lunes.setDate(lunes.getDate() - nDay);
-    const expresion = 'SELECT dp.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, dp.precioActual, dp.cantidad, p.nombre AS producto FROM detallescobroproductos AS dp '
-        + ' INNER JOIN cobros AS c ON dp.idCobro = c.id'
-        + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
-        + ' INNER JOIN empleados AS e ON dp.idBarber = e.id'
-        + ' INNER JOIN productos AS p ON dp.idProducto = p.id'
-        + " WHERE fecha < '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND dp.idBarber = " + id
-        + ' order by fecha desc'
-    sql.query(expresion,
-        (err, rows) => {
-            if (err) { console.log(err) }
-            else {
-                res.send(rows)
-            }
-        })
-})
-app.get("/productos-semana", (req, res) => {
-    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
-    const lunes = new Date(now + 'T00:00:00')
-    var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
-    lunes.setDate(lunes.getDate() - nDay);
-    const expresion = 'SELECT dp.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, dp.precioActual, dp.cantidad, p.nombre AS producto FROM detallescobroproductos AS dp '
-        + ' INNER JOIN cobros AS c ON dp.idCobro = c.id'
-        + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
-        + ' INNER JOIN empleados AS e ON dp.idBarber = e.id'
-        + ' INNER JOIN productos AS p ON dp.idProducto = p.id'
-        + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122'"
-        + ' order by fecha desc'
-    sql.query(expresion,
-        (err, rows) => {
-            if (err) { console.log(err) }
-            else {
-                res.send(rows)
-            }
-        })
-})
-app.get("/productos-semana/:id", (req, res) => {
-    const id = req.params.id
-    const now = new Date().toLocaleDateString('es-mx', options).split('/').reverse().join('-')
-    const lunes = new Date(now + 'T00:00:00')
-    var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
-    lunes.setDate(lunes.getDate() - nDay);
-    const expresion = 'SELECT dp.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, dp.precioActual, dp.cantidad, p.nombre AS producto FROM detallescobroproductos AS dp '
-        + ' INNER JOIN cobros AS c ON dp.idCobro = c.id'
-        + ' INNER JOIN clientes AS cl ON c.idCliente = cl.id'
-        + ' INNER JOIN empleados AS e ON dp.idBarber = e.id'
-        + ' INNER JOIN productos AS p ON dp.idProducto = p.id'
-        + " WHERE fecha >= '" + formatearFechaHora(lunes) + "' AND c.idCliente != '122' AND dp.idBarber = " + id
-        + ' order by fecha desc'
-    sql.query(expresion,
-        (err, rows) => {
-            if (err) { console.log(err) }
-            else {
-                res.send(rows)
-            }
-        })
-})
-
-app.get("/fotos-empleados", (req, res) => {
-
-    sql.query('SELECT id, foto FROM empleados',
-        (err, rows) => {
-            if (err) { alert(err) }
-            else {
-                rows.map(img => {
-                    if (img.foto)
-                        fs.writeFileSync(path.join(__dirname, './dbimages/empleado' + img.id + '.webp'), img.foto)
-                })
-                const imagedir = fs.readdirSync(path.join(__dirname, './dbimages/'))
-                res.json(imagedir)
-            }
-        }
-    );
+    try {
+        const result = await sql`
+            SELECT ds.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, ds.precioActual, ds.cantidad, s.nombre AS servicio 
+            FROM detallescobroservicios AS ds
+            INNER JOIN cobros AS c ON ds.idCobro = c.id
+            INNER JOIN clientes AS cl ON c.idCliente = cl.id
+            INNER JOIN empleados AS e ON ds.idBarber = e.id
+            INNER JOIN servicios AS s ON ds.idServicio = s.id
+            WHERE c.fecha < ${lunes} AND c.idCliente != '122' AND ds.idBarber = ${id}
+            ORDER BY c.fecha DESC
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener los servicios de la semana para el barber.");
+    }
 });
 
-app.get("/foto-empleado/:id", (req, res) => {
-    const id = req.params.id
-    sql.query('SELECT id, foto FROM empleados WHERE id = ?', id,
-        (err, row) => {
-            if (err) { console.log(err) }
-            else {
-                if (row[0].foto) {
-                    const dir = path.join(__dirname, './dbimages');
+app.get("/servicios-semana", async (req, res) => {
+    const now = new Date().toLocaleDateString('es-MX', options).split('/').reverse().join('-');
+    const lunes = new Date(now + 'T00:00:00');
+    var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
+    lunes.setDate(lunes.getDate() - nDay);
 
-                    if (!fs.existsSync(dir)) {
-                        fs.mkdirSync(dir);
-                    }
-
-                    fs.writeFileSync(path.join(dir, 'empleado' + row[0].id + '.webp'), row[0].foto)
-                    const imageDir = fs.readdirSync(dir)
-                    res.json('empleado' + row[0].id + '.webp')
-                } else {
-                    res.json(null)
-                }
-            }
-        }
-    );
-})
-
-app.post("/create-empleado", (req, res) => {
-    const usuario = req.body.usuario
-    const pass = req.body.pass
-    const nombre = req.body.nombre
-    const telefono = req.body.telefono
-    const correo = req.body.correo
-    const fechaNacimiento = req.body.fechaNacimiento
-    const fechaInicio = req.body.fechaInicio
-    const puesto = req.body.puesto
-    const estatus = req.body.estatus
-    const foto = req.body.foto
-    const municipio = req.body.municipio
-
-    sql.query('INSERT INTO empleados(usuario,pass,nombre,telefono,correo,fechaNacimiento,fechaInicio,puesto,estatus,foto,municipio) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
-        [usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, foto, municipio],
-        (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send("Error al insertar el empleado");
-            } else {
-                sql.query(
-                    'SELECT * FROM empleados WHERE id = ?',
-                    [result.insertId],
-                    (err, rows) => {
-                        if (err) {
-                            console.log(err);
-                            res.status(500).send("Error al obtener el empleado insertado");
-                        } else {
-                            res.send(rows[0]);
-                        }
-                    }
-                );
-            }
-        }
-    );
+    try {
+        const result = await sql`
+            SELECT ds.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, ds.precioActual, ds.cantidad, s.nombre AS servicio 
+            FROM detallescobroservicios AS ds
+            INNER JOIN cobros AS c ON ds.idCobro = c.id
+            INNER JOIN clientes AS cl ON c.idCliente = cl.id
+            INNER JOIN empleados AS e ON ds.idBarber = e.id
+            INNER JOIN servicios AS s ON ds.idServicio = s.id
+            WHERE c.fecha >= ${lunes} AND c.idCliente != '122'
+            ORDER BY c.fecha DESC
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener los servicios de la semana.");
+    }
 });
 
-app.put("/update-empleado", (req, res) => {
-    const id = req.body.id
-    const usuario = req.body.usuario
-    const pass = req.body.pass
-    const nombre = req.body.nombre
-    const telefono = req.body.telefono
-    const correo = req.body.correo
-    const fechaNacimiento = req.body.fechaNacimiento
-    const fechaInicio = req.body.fechaInicio
-    const puesto = req.body.puesto
-    const estatus = req.body.estatus
-    const municipio = req.body.municipio
+app.get("/servicios-semana/:id", async (req, res) => {
+    const id = req.params.id;
+    const now = new Date().toLocaleDateString('es-MX', options).split('/').reverse().join('-');
+    const lunes = new Date(now + 'T00:00:00');
+    var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
+    lunes.setDate(lunes.getDate() - nDay);
 
-    sql.query('UPDATE empleados SET usuario=?,pass=?,nombre=?,telefono=?,correo=?,fechaNacimiento=?,fechaInicio=?,puesto=?,estatus=?,municipio=? WHERE id=?',
-        [usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, municipio, id],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-app.put("/update-empleado-datos", (req, res) => {
-    const id = req.body.id
-    const usuario = req.body.usuario
-    const nombre = req.body.nombre
-    const telefono = req.body.telefono
-    const correo = req.body.correo
-    const fechaNacimiento = req.body.fechaNacimiento
-    const color = req.body.color
-    const municipio = req.body.municipio
-
-    sql.query('UPDATE empleados SET usuario=?,nombre=?,telefono=?,correo=?,fechaNacimiento=?, color=?, municipio=? WHERE id=?',
-        [usuario, nombre, telefono, correo, fechaNacimiento, color, municipio, id],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-app.put("/update-password", (req, res) => {
-    const id = req.body.id
-    const pass = req.body.pass
-    sql.query('UPDATE empleados SET pass=? WHERE id=?',
-        [pass, id],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
+    try {
+        const result = await sql`
+            SELECT ds.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, ds.precioActual, ds.cantidad, s.nombre AS servicio 
+            FROM detallescobroservicios AS ds
+            INNER JOIN cobros AS c ON ds.idCobro = c.id
+            INNER JOIN clientes AS cl ON c.idCliente = cl.id
+            INNER JOIN empleados AS e ON ds.idBarber = e.id
+            INNER JOIN servicios AS s ON ds.idServicio = s.id
+            WHERE c.fecha >= ${lunes} AND c.idCliente != '122' AND ds.idBarber = ${id}
+            ORDER BY c.fecha DESC
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener los servicios de la semana para el barber.");
+    }
 });
 
-app.put("/update-empleado-municipio", (req, res) => {
-    const idBarber = req.body.id
-    const municipio = req.body.municipio
-    sql.query('UPDATE empleados SET municipio=? WHERE id=?',
-        [municipio, idBarber],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
+app.get("/productos-semana-all/:id", async (req, res) => {
+    const id = req.params.id;
+    const now = new Date().toLocaleDateString('es-MX', options).split('/').reverse().join('-');
+    const lunes = new Date(now + 'T00:00:00');
+    var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
+    lunes.setDate(lunes.getDate() - nDay);
+
+    try {
+        const result = await sql`
+            SELECT dp.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, dp.precioActual, dp.cantidad, p.nombre AS producto
+            FROM detallescobroproductos AS dp
+            INNER JOIN cobros AS c ON dp.idCobro = c.id
+            INNER JOIN clientes AS cl ON c.idCliente = cl.id
+            INNER JOIN empleados AS e ON dp.idBarber = e.id
+            INNER JOIN productos AS p ON dp.idProducto = p.id
+            WHERE c.fecha < ${lunes} AND c.idCliente != '122' AND dp.idBarber = ${id}
+            ORDER BY c.fecha DESC
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener los productos de la semana para el barber.");
+    }
+});
+
+app.get("/productos-semana", async (req, res) => {
+    const now = new Date().toLocaleDateString('es-MX', options).split('/').reverse().join('-');
+    const lunes = new Date(now + 'T00:00:00');
+    var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
+    lunes.setDate(lunes.getDate() - nDay);
+
+    try {
+        const result = await sql`
+            SELECT dp.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, dp.precioActual, dp.cantidad, p.nombre AS producto
+            FROM detallescobroproductos AS dp
+            INNER JOIN cobros AS c ON dp.idCobro = c.id
+            INNER JOIN clientes AS cl ON c.idCliente = cl.id
+            INNER JOIN empleados AS e ON dp.idBarber = e.id
+            INNER JOIN productos AS p ON dp.idProducto = p.id
+            WHERE c.fecha >= ${lunes} AND c.idCliente != '122'
+            ORDER BY c.fecha DESC
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener los productos de la semana.");
+    }
+});
+
+app.get("/productos-semana/:id", async (req, res) => {
+    const id = req.params.id;
+    const now = new Date().toLocaleDateString('es-MX', options).split('/').reverse().join('-');
+    const lunes = new Date(now + 'T00:00:00');
+    var nDay = (lunes.getDay() == 0) ? 6 : lunes.getDay() - 1;
+    lunes.setDate(lunes.getDate() - nDay);
+
+    try {
+        const result = await sql`
+            SELECT dp.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, dp.precioActual, dp.cantidad, p.nombre AS producto
+            FROM detallescobroproductos AS dp
+            INNER JOIN cobros AS c ON dp.idCobro = c.id
+            INNER JOIN clientes AS cl ON c.idCliente = cl.id
+            INNER JOIN empleados AS e ON dp.idBarber = e.id
+            INNER JOIN productos AS p ON dp.idProducto = p.id
+            WHERE c.fecha >= ${lunes} AND c.idCliente != '122' AND dp.idBarber = ${id}
+            ORDER BY c.fecha DESC
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener los productos de la semana para el barber.");
+    }
+});
+
+app.get("/fotos-empleados", async (req, res) => {
+    try {
+        const result = await sql`SELECT id, foto FROM empleados`;
+        result.map(img => {
+            if (img.foto)
+                fs.writeFileSync(path.join(__dirname, './dbimages/empleado' + img.id + '.webp'), img.foto);
+        });
+        const imagedir = fs.readdirSync(path.join(__dirname, './dbimages/'));
+        res.json(imagedir);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener las fotos de los empleados.");
+    }
+});
+
+
+app.get("/foto-empleado/:id", async (req, res) => {
+    const id = req.params.id;
+    try {
+        const result = await sql`SELECT id, foto FROM empleados WHERE id = ${id}`;
+        if (result[0].foto) {
+            const dir = path.join(__dirname, './dbimages');
+
+            if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+
+            fs.writeFileSync(path.join(dir, 'empleado' + result[0].id + '.webp'), result[0].foto);
+            res.json('empleado' + result[0].id + '.webp');
+        } else {
+            res.json(null);
         }
-    );
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener la foto del empleado.");
+    }
+});
+
+
+app.post("/create-empleado", async (req, res) => {
+    const { usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, foto, municipio } = req.body;
+    try {
+        const result = await sql`
+            INSERT INTO empleados (usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, foto, municipio)
+            VALUES (${usuario}, ${pass}, ${nombre}, ${telefono}, ${correo}, ${fechaNacimiento}, ${fechaInicio}, ${puesto}, ${estatus}, ${foto}, ${municipio})
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al insertar el empleado', err.stack);
+        res.status(500).send("Error al insertar el empleado");
+    }
+});
+
+
+app.put("/update-empleado", async (req, res) => {
+    const { id, usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, municipio } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE empleados 
+            SET usuario = ${usuario}, pass = ${pass}, nombre = ${nombre}, telefono = ${telefono}, correo = ${correo}, 
+                fechaNacimiento = ${fechaNacimiento}, fechaInicio = ${fechaInicio}, puesto = ${puesto}, estatus = ${estatus}, municipio = ${municipio}
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al actualizar el empleado', err.stack);
+        res.status(500).send("Error al actualizar el empleado");
+    }
+});
+
+app.put("/update-empleado-datos", async (req, res) => {
+    const { id, usuario, nombre, telefono, correo, fechaNacimiento, color, municipio } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE empleados 
+            SET usuario = ${usuario}, nombre = ${nombre}, telefono = ${telefono}, correo = ${correo}, 
+                fechaNacimiento = ${fechaNacimiento}, color = ${color}, municipio = ${municipio}
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al actualizar los datos del empleado', err.stack);
+        res.status(500).send("Error al actualizar los datos del empleado");
+    }
+});
+
+app.put("/update-password", async (req, res) => {
+    const { id, pass } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE empleados 
+            SET pass = ${pass}
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al actualizar la contraseña', err.stack);
+        res.status(500).send("Error al actualizar la contraseña");
+    }
+});
+
+
+app.put("/update-empleado-municipio", async (req, res) => {
+    const { idBarber, municipio } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE empleados 
+            SET municipio = ${municipio}
+            WHERE id = ${idBarber}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al actualizar el municipio del empleado', err.stack);
+        res.status(500).send("Error al actualizar el municipio del empleado");
+    }
 });
 
 
@@ -623,294 +632,295 @@ const fileUpload = multer({
 }).single('image')
 
 
-app.put('/update-foto-empleado', fileUpload, (req, res) => {
-    const id = req.body.id
-    const type = req.file.mimetype
-    const name = req.file.originalname
-    const imagePath = path.join(__dirname, './images/' + req.file.filename)
+app.put('/update-foto-empleado', fileUpload, async (req, res) => {
+    const { id } = req.body;
+    const imagePath = path.join(__dirname, './images/' + req.file.filename);
 
     const width = 420;
     const format = 'webp';
 
-    sharp(imagePath)
-        .resize(width)
-        .toFormat(format)
-        .toBuffer()
-        .then(data => {
-            sql.query('UPDATE empleados set foto = ? WHERE id = ?', [data, id], (err, result) => {
-                if (err) return res.status(500).send('Error al actualizar foto')
-                else res.send("Foto actualizada\nActualizar para mostrar cambios")
-            })
-        })
-        .catch(err => {
-            // Maneja cualquier error que ocurra durante la manipulación de la imagen
-            console.error(err);
-            res.status(500).send('Error al procesar la imagen');
-        });
-})
+    try {
+        const data = await sharp(imagePath)
+            .resize(width)
+            .toFormat(format)
+            .toBuffer();
 
-app.delete("/delete-empleado/:id", (req, res) => {
-    const id = req.params.id;
-
-    sql.query('DELETE FROM empleados WHERE id=?', id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
+        const result = await sql`
+            UPDATE empleados 
+            SET foto = ${data}
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send("Foto actualizada\nActualizar para mostrar cambios");
+    } catch (err) {
+        console.error('Error al actualizar la foto del empleado', err.stack);
+        res.status(500).send('Error al procesar la imagen');
+    }
 });
 
-app.get("/empleado/:id", (req, res) => {
-    const id = req.params.id
 
-    sql.query('SELECT usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, fechaInicio, puesto, estatus, color, municipio FROM empleados WHERE id=?', id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
+app.delete("/delete-empleado/:id", async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const result = await sql`
+            DELETE FROM empleados 
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al eliminar el empleado', err.stack);
+        res.status(500).send("Error al eliminar el empleado");
+    }
+});
+
+
+app.get("/empleado/:id", async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const result = await sql`
+            SELECT usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, color, municipio
+            FROM empleados 
+            WHERE id = ${id}
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener el empleado");
+    }
+});
+
 
 // Funciones para los servicios
-app.get("/servicios/:municipio", (req, res) => {
-    const municipio = req.params.municipio
+app.get("/servicios/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
 
-    sql.query('SELECT * FROM servicios where municipio = ? order by nombre', municipio,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
+    try {
+        const result = await sql`
+            SELECT * 
+            FROM servicios 
+            WHERE municipio = ${municipio}
+            ORDER BY nombre
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener los servicios");
+    }
 });
 
-app.post("/create-servicio", (req, res) => {
-    const nombre = req.body.nombre
-    const descripcion = req.body.descripcion
-    const precio = req.body.precio
-    const pts = req.body.pts
-    const municipio = req.body.municipio
 
-    sql.query('INSERT INTO servicios(nombre,descripcion,precio,pts,municipio) VALUES(?,?,?,?,?)',
-        [nombre, descripcion, precio, pts, municipio],
-        (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send("Error al insertar el servicio");
-            } else {
-                sql.query(
-                    'SELECT * FROM servicios WHERE id = ?',
-                    [result.insertId],
-                    (err, rows) => {
-                        if (err) {
-                            console.log(err);
-                            res.status(500).send("Error al obtener el servicio insertado");
-                        } else {
-                            res.send(rows[0]);
-                        }
-                    }
-                );
-            }
-        }
-    );
+app.post("/create-servicio", async (req, res) => {
+    const { nombre, descripcion, precio, pts, municipio } = req.body;
+
+    try {
+        const result = await sql`
+            INSERT INTO servicios (nombre, descripcion, precio, pts, municipio)
+            VALUES (${nombre}, ${descripcion}, ${precio}, ${pts}, ${municipio})
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al insertar el servicio', err.stack);
+        res.status(500).send("Error al insertar el servicio");
+    }
 });
 
-app.put("/update-servicio", (req, res) => {
-    const id = req.body.id
-    const nombre = req.body.nombre
-    const descripcion = req.body.descripcion
-    const precio = req.body.precio
-    const pts = req.body.pts
 
-    sql.query('UPDATE servicios SET nombre=?,descripcion=?,precio=?,pts=? WHERE id=?',
-        [nombre, descripcion, precio, pts, id],
-        (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send("Error al actualizar el servicio");
-            } else {
-                sql.query(
-                    'SELECT * FROM servicios WHERE id = ?',
-                    [id],
-                    (err, rows) => {
-                        if (err) {
-                            console.log(err);
-                            res.status(500).send("Error al obtener el servicio actualizado");
-                        } else {
-                            res.send(rows[0]);
-                        }
-                    }
-                );
-            }
-        }
-    );
+app.put("/update-servicio", async (req, res) => {
+    const { id, nombre, descripcion, precio, pts } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE servicios 
+            SET nombre = ${nombre}, descripcion = ${descripcion}, precio = ${precio}, pts = ${pts}
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al actualizar el servicio', err.stack);
+        res.status(500).send("Error al actualizar el servicio");
+    }
 });
 
-app.delete("/delete-servicio/:id", (req, res) => {
+
+app.delete("/delete-servicio/:id", async (req, res) => {
     const id = req.params.id;
 
-    sql.query('DELETE FROM servicios WHERE id=?', id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
+    try {
+        const result = await sql`
+            DELETE FROM servicios 
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al eliminar el servicio', err.stack);
+        res.status(500).send("Error al eliminar el servicio");
+    }
 });
 
-app.get("/servicio/:id", (req, res) => {
-    const id = req.params.id
 
-    sql.query('SELECT * FROM servicios WHERE id=?', id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
+app.get("/servicio/:id", async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const result = await sql`
+            SELECT * 
+            FROM servicios 
+            WHERE id = ${id}
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al obtener el servicio', err.stack);
+        res.status(500).send("Error al obtener el servicio");
+    }
+});
 
 // Funciones para los productos
-app.get("/productos/:municipio", (req, res) => {
-    const municipio = req.params.municipio
+app.get("/productos/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
 
-    sql.query('SELECT * FROM productos where municipio = ? order by nombre', municipio,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
+    try {
+        const result = await sql`
+            SELECT * 
+            FROM productos 
+            WHERE municipio = ${municipio}
+            ORDER BY nombre
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener los productos', err.stack);
+        res.status(500).send("Error al obtener los productos");
+    }
 });
 
-app.post("/create-producto", (req, res) => {
-    const nombre = req.body.nombre
-    const marca = req.body.marca
-    const linea = req.body.linea
-    const contenido = req.body.contenido
-    const enVenta = req.body.enVenta
-    const suministros = req.body.suministros
-    const almacen = req.body.almacen
-    const descripcion = req.body.descripcion
-    const costo = req.body.costo
-    const precio = req.body.precio
-    const pts = req.body.pts
-    const imagen = req.body.imagen
-    const municipio = req.body.municipio
-    sql.query('INSERT INTO productos(nombre,marca,linea,contenido,enVenta,suministros,almacen,descripcion,costo,precio,pts,imagen,municipio) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)',
-        [nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio],
-        (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send("Error al insertar el producto");
-            } else {
-                sql.query(
-                    'SELECT * FROM productos WHERE id = ?',
-                    [result.insertId],
-                    (err, rows) => {
-                        if (err) {
-                            console.log(err);
-                            res.status(500).send("Error al obtener el producto insertado");
-                        } else {
-                            res.send(rows[0]);
-                        }
-                    }
-                );
-            }
-        }
-    );
+
+app.post("/create-producto", async (req, res) => {
+    const { nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio } = req.body;
+
+    try {
+        const result = await sql`
+            INSERT INTO productos (nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio)
+            VALUES (${nombre}, ${marca}, ${linea}, ${contenido}, ${enVenta}, ${suministros}, ${almacen}, ${descripcion}, ${costo}, ${precio}, ${pts}, ${imagen}, ${municipio})
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al insertar el producto', err.stack);
+        res.status(500).send("Error al insertar el producto");
+    }
 });
 
-app.put("/update-producto", (req, res) => {
-    const id = req.body.id
-    const nombre = req.body.nombre
-    const marca = req.body.marca
-    const linea = req.body.linea
-    const contenido = req.body.contenido
-    const enVenta = req.body.enVenta
-    const suministros = req.body.suministros
-    const almacen = req.body.almacen
-    const descripcion = req.body.descripcion
-    const costo = req.body.costo
-    const precio = req.body.precio
-    const pts = req.body.pts
-    const imagen = req.body.imagen
 
-    sql.query('UPDATE productos SET nombre=?,marca=?,linea=?,contenido=?,enVenta=?,suministros=?,almacen=?,descripcion=?,costo=?,precio=?,pts=?,imagen=? WHERE id=?',
-        [nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen, id],
-        (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send("Error al actualizar el producto");
-            } else {
-                sql.query(
-                    'SELECT * FROM productos WHERE id = ?',
-                    [id],
-                    (err, rows) => {
-                        if (err) {
-                            console.log(err);
-                            res.status(500).send("Error al obtener el producto actualizado");
-                        } else {
-                            res.send(rows[0]);
-                        }
-                    }
-                );
-            }
-        }
-    );
+app.put("/update-producto", async (req, res) => {
+    const { id, nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE productos 
+            SET nombre = ${nombre}, marca = ${marca}, linea = ${linea}, contenido = ${contenido}, enVenta = ${enVenta}, 
+                suministros = ${suministros}, almacen = ${almacen}, descripcion = ${descripcion}, costo = ${costo}, 
+                precio = ${precio}, pts = ${pts}, imagen = ${imagen}
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al actualizar el producto', err.stack);
+        res.status(500).send("Error al actualizar el producto");
+    }
 });
 
-app.delete("/delete-producto/:id", (req, res) => {
+
+app.delete("/delete-producto/:id", async (req, res) => {
     const id = req.params.id;
 
-    sql.query('DELETE FROM productos WHERE id=?', id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
+    try {
+        const result = await sql`
+            DELETE FROM productos 
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al eliminar el producto', err.stack);
+        res.status(500).send("Error al eliminar el producto");
+    }
 });
 
-app.get("/producto/:id", (req, res) => {
-    const id = req.params.id
 
-    sql.query('SELECT * FROM productos WHERE id=?', id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
-
-// Permisos
-app.get("/permisos", (req, res) => {
-    sql.query('SELECT * FROM permisos order by permiso',
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
-
-app.get("/permisos-usuario/:id", (req, res) => {
-    const id = req.params.id
-
-    sql.query('SELECT permiso FROM permisos WHERE idEmpleado=?', id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
-
-app.post("/create-permisos", (req, res) => {
-    const permisos = req.body.permisos
-    let values = ''
-    permisos.forEach(permiso => {
-        values += '("' + permiso.permiso + '",' + permiso.idEmpleado + '),'
-    });
-    sql.query("INSERT INTO permisos(permiso, idEmpleado) VALUES " + values.slice(0, -1),
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-app.delete("/delete-permisos/:id", (req, res) => {
+app.get("/producto/:id", async (req, res) => {
     const id = req.params.id;
 
-    sql.query('DELETE FROM permisos WHERE idEmpleado=?', id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
+    try {
+        const result = await sql`
+            SELECT * 
+            FROM productos 
+            WHERE id = ${id}
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al obtener el producto', err.stack);
+        res.status(500).send("Error al obtener el producto");
+    }
 });
+
+
+app.get("/permisos-usuario/:id", async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const result = await sql`
+            SELECT permiso 
+            FROM permisos 
+            WHERE idEmpleado = ${id}
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener los permisos del usuario', err.stack);
+        res.status(500).send("Error al obtener los permisos del usuario");
+    }
+});
+
+
+app.post("/create-permisos", async (req, res) => {
+    const permisos = req.body.permisos;
+    let values = permisos.map(permiso => `(${permiso.permiso}, ${permiso.idEmpleado})`).join(',');
+
+    try {
+        const result = await sql`
+            INSERT INTO permisos (permiso, idEmpleado) 
+            VALUES ${sql(values)}
+            RETURNING *
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al crear permisos', err.stack);
+        res.status(500).send("Error al crear permisos");
+    }
+});
+
+
+app.delete("/delete-permisos/:id", async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const result = await sql`
+            DELETE FROM permisos 
+            WHERE idEmpleado = ${id}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al eliminar permisos', err.stack);
+        res.status(500).send("Error al eliminar permisos");
+    }
+});
+
 
 
 // Funciones para los cobros o ventas
