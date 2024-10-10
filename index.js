@@ -7,7 +7,7 @@ const fs = require('fs');
 const sharp = require('sharp');
 const postgres = require('postgres');
 
-// Crear una instancia de express
+//#region Crear una instancia de express
 const app = express();
 
 const { host, username, password, database, port } = require("./config");
@@ -21,7 +21,7 @@ const corsOptions = {
     credentials: true // Indica que se aceptan las credenciales
 };
 
-// Aquí puedes usar el paquete cors con las opciones que creaste
+//#region Aquí puedes usar el paquete cors con las opciones que creaste
 app.use(cors(corsOptions));
 
 app.use(express.json());
@@ -30,7 +30,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 
 
-// Conexión db
+//#region Conexión db
 const db_config = {
     host: host,
     user: username,
@@ -44,7 +44,7 @@ const db_config = {
 
 const sql = postgres(db_config);
 
-// Home
+//#region Home
 app.get('/', (req, res) => {
     const { pass, ...rest } = sql.options;
     res.send(`¡Bienvenido Barber!\n\nDatos de la conexión:\n${JSON.stringify(rest)}`);
@@ -55,7 +55,7 @@ app.get('/animation', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'animation.html'));
 });
 
-// Función para autenticación
+//#region Función para autenticación
 app.get("/auth/:user/:pass", async (req, res) => {
     const usuario = req.params.user
     const pass = req.params.pass
@@ -89,7 +89,7 @@ app.put("/cambio-municipio", async (req, res) => {
     }
 })
 
-// Funciones para los clientes
+//#region Funciones para los clientes
 app.get('/puntos/:id', async (req, res) => {
     const id = req.params.id;
 
@@ -150,14 +150,12 @@ app.post("/create-cliente", async (req, res) => {
     const municipio = req.body.municipio;
 
     try {
-        // Inserta y retorna todos los campos del nuevo cliente
         const result = await sql`
             INSERT INTO clientes (nombre, telefono, pts, genero, fechaNacimiento, codigoQR, municipio)
             VALUES (${nombre}, ${telefono}, ${pts}, ${genero}, ${fechaNacimiento}, ${codigoQR}, ${municipio})
             RETURNING *
         `;
-
-        res.send(result[0]); // Enviar los datos del nuevo cliente
+        res.send(result[0]);
     } catch (err) {
         console.error('Error executing query', err.stack);
         res.status(500).send("Error al insertar el cliente");
@@ -286,7 +284,7 @@ app.put("/update-cuenta", async (req, res) => {
 });
 
 
-// Funciones para los empleados
+//#region Funciones para los empleados
 app.get("/empleados", async (req, res) => {
     try {
         const result = await sql`
@@ -693,7 +691,7 @@ app.get("/empleado/:id", async (req, res) => {
 });
 
 
-// Funciones para los servicios
+//#region Funciones para los servicios
 app.get("/servicios/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
@@ -780,7 +778,7 @@ app.get("/servicio/:id", async (req, res) => {
     }
 });
 
-// Funciones para los productos
+//#region Funciones para los productos
 app.get("/productos/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
@@ -923,402 +921,509 @@ app.delete("/delete-permisos/:id", async (req, res) => {
 
 
 
-// Funciones para los cobros o ventas
-app.get("/cobros/:municipio", (req, res) => {
-    const municipio = req.params.municipio
+//#region Funciones para los cobros o ventas
+app.get("/cobros/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
 
-    const query = 'SELECT v.id, c.nombre as cliente, total, descuento, subtotal, totalPuntos, metodoPago, b.nombre as barber, s.nombre as cobrador, fecha, pagoEfectivo, pagoTarjeta, pagoPuntos, v.municipio '
-        + 'from cobros as v '
-        + 'inner join clientes as c on v.idCliente = c.id '
-        + 'inner join empleados as b on v.idBarber = b.id '
-        + 'inner join empleados as s on v.idCobrador = s.id WHERE v.municipio = ' + municipio + ' order by fecha desc LIMIT 300'
-    sql.query(query,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-app.get("/cobros-hoy/:municipio", (req, res) => {
-    const municipio = req.params.municipio
-
-    const query = 'SELECT v.id, c.nombre as cliente, total, descuento, subtotal, totalPuntos, metodoPago, b.nombre as barber, s.nombre as cobrador, fecha, pagoEfectivo, pagoTarjeta, pagoPuntos, v.municipio '
-        + 'from cobros as v '
-        + 'inner join clientes as c on v.idCliente = c.id '
-        + 'inner join empleados as b on v.idBarber = b.id '
-        + "inner join empleados as s on v.idCobrador = s.id WHERE DATE(fecha) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) and v.municipio = " + municipio + " order by fecha desc"
-    sql.query(query,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-app.get("/cobro/:id", (req, res) => {
-    const id = req.params.id
-    const query = 'SELECT v.id, c.nombre as cliente, total, descuento, subtotal, totalPuntos, metodoPago, b.nombre as barber, s.nombre as cobrador, fecha, pagoEfectivo, pagoTarjeta, pagoPuntos '
-        + 'from cobros as v '
-        + 'inner join clientes as c on v.idCliente = c.id '
-        + 'inner join empleados as b on v.idBarber = b.id '
-        + 'inner join empleados as s on v.idCobrador = s.id WHERE v.id = ?'
-    sql.query(query, id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
-
-app.post("/create-cobro", (req, res) => {
-    const idCliente = req.body.idCliente
-    const total = req.body.total
-    const descuento = req.body.descuento
-    const subtotal = req.body.subtotal
-    const totalPuntos = req.body.totalPuntos
-    const metodoPago = req.body.metodoPago
-    const idBarber = req.body.idBarber
-    const idCobrador = req.body.idCobrador
-    const pagoEfectivo = req.body.pagoEfectivo
-    const pagoTarjeta = req.body.pagoTarjeta
-    const pagoPuntos = req.body.pagoPuntos
-    const municipio = req.body.municipio
-    sql.query('INSERT INTO cobros(idCliente,total,descuento,subtotal,totalPuntos,metodoPago,idBarber,idCobrador,pagoEfectivo,pagoTarjeta,pagoPuntos,municipio) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',
-        [idCliente, total, descuento, subtotal, totalPuntos, metodoPago, idBarber, idCobrador, pagoEfectivo, pagoTarjeta, pagoPuntos, municipio],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-// Inventario puntos y caja
-app.get("/caja/:municipio", (req, res) => {
-    const municipio = req.params.municipio
-
-    const query = 'SELECT * FROM caja WHERE municipio = ?'
-    sql.query(query, municipio,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-app.put("/update-caja", (req, res) => {
-    const id = req.body.id
-    const efectivo = req.body.efectivo
-    const dineroElectronico = req.body.dineroElectronico
-    const puntos = req.body.puntos
-
-    sql.query('UPDATE caja SET efectivo=efectivo+?, dineroElectronico=dineroElectronico+?, puntos=puntos+? WHERE id=?',
-        [efectivo, dineroElectronico, puntos, id],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-
-app.put("/update-cliente-pts", (req, res) => {
-    const id = req.body.id
-    const pts = req.body.pts
-
-    sql.query('UPDATE clientes SET pts=pts+? WHERE id=?',
-        [pts, id],
-        (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send("Error al actualizar puntos");
-            } else {
-                sql.query(
-                    'SELECT * FROM clientes WHERE id = ?',
-                    [id],
-                    (err, rows) => {
-                        if (err) {
-                            console.log(err);
-                            res.status(500).send("Error al obtener el cliente modificado");
-                        } else {
-                            res.send(rows[0]);
-                        }
-                    }
-                );
-            }
-        }
-    );
-});
-
-app.put("/update-inventario", (req, res) => {
-    const id = req.body.id
-    const cantidad = req.body.cantidad
-
-    sql.query('UPDATE productos SET enVenta=enVenta+? WHERE id=?',
-        [cantidad, id],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-app.post("/create-movimiento", (req, res) => {
-    const concepto = req.body.concepto
-    const cantidad = req.body.cantidad
-    const idUsuario = req.body.idUsuario
-    const municipio = req.body.municipio
-    sql.query('INSERT INTO movimientos(concepto,cantidad,idUsuario,municipio) VALUES(?,?,?,?)',
-        [concepto, cantidad, idUsuario, municipio],
-        (err, result) => {
-            if (err) {
-                console.log(err);
-                res.status(500).send("Error al insertar movimiento");
-            } else {
-                sql.query(
-                    "SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio FROM movimientos as m INNER JOIN empleados on idUsuario = empleados.id WHERE m.id = ?",
-
-                    [result.insertId],
-                    (err, rows) => {
-                        if (err) {
-                            console.log(err);
-                            res.status(500).send("Error al obtener el movimiento insertado");
-                        } else {
-                            res.send(rows[0]);
-                        }
-                    }
-                );
-            }
-        }
-    );
-});
-
-app.get("/movimientos/:municipio", (req, res) => {
-    const municipio = req.params.municipio
-    const query = "SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio FROM movimientos as m INNER JOIN empleados on idUsuario = empleados.id WHERE DATE(fechaHora) != DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) and m.municipio = ?"
-    sql.query(query, municipio,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-app.get("/movimientos-hoy/:municipio", (req, res) => {
-    const municipio = req.params.municipio
-
-    const query = "SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio FROM movimientos as m INNER JOIN empleados on idUsuario = empleados.id WHERE DATE(fechaHora) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) and m.municipio = ?"
-    sql.query(query, municipio,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-
-// Detalles de cobro de servicios y productos
-app.get("/detalles-servicio/:id", (req, res) => {
-    const id = req.params.id
-
-    sql.query('SELECT d.id, cantidad, s.nombre, precioActual, puntosActual, e.nombre as barber FROM detallescobroservicios as d inner join servicios as s on idServicio = s.id left join empleados as e on idBarber = e.id WHERE idCobro=?', id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
-
-app.post("/create-detalle-servicio", (req, res) => {
-    const idCobro = req.body.idCobro
-    const idServicio = req.body.idServicio
-    const cantidad = req.body.cantidad
-    const precioActual = req.body.precioActual
-    const puntosActual = req.body.puntosActual
-    const idBarber = req.body.idBarber
-
-    sql.query('INSERT INTO detallescobroservicios(idCobro, idServicio, cantidad, precioActual, puntosActual, idBarber) VALUES(?,?,?,?,?,?)',
-        [idCobro, idServicio, cantidad, precioActual, puntosActual, idBarber],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-app.get("/detalles-producto/:id", (req, res) => {
-    const id = req.params.id
-
-    sql.query('SELECT d.id, cantidad, p.nombre, precioActual, puntosActual, e.nombre as barber FROM detallescobroproductos as d inner join productos as p on idProducto = p.id left join empleados as e on idBarber = e.id WHERE idCobro=?', id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
-
-app.post("/create-detalle-producto", (req, res) => {
-    const idCobro = req.body.idCobro
-    const idProducto = req.body.idProducto
-    const cantidad = req.body.cantidad
-    const precioActual = req.body.precioActual
-    const puntosActual = req.body.puntosActual
-    const idBarber = req.body.idBarber
-
-    sql.query('INSERT INTO detallescobroproductos(idCobro, idProducto, cantidad, precioActual, puntosActual, idBarber) VALUES(?,?,?,?,?,?)',
-        [idCobro, idProducto, cantidad, precioActual, puntosActual, idBarber],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-
-// Reportes
-app.post("/create-reporte", (req, res) => {
-    const idBarber = req.body.idBarber
-    const montoEfectivo = req.body.montoEfectivo
-    const montoElectronico = req.body.montoElectronico
-    const montoPts = req.body.montoPts
-    const municipio = req.body.municipio
-
-    sql.query('INSERT INTO reportes(idBarber, montoEfectivo, montoElectronico, montoPts, municipio) VALUES(?,?,?,?,?)',
-        [idBarber, montoEfectivo, montoElectronico, montoPts, municipio],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-app.get("/reporte-hoy/:municipio", (req, res) => {
-    const municipio = req.params.municipio
-
-    sql.query("SELECT id FROM reportes WHERE DATE(fecha) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) AND municipio = " + municipio,
-        (err, result) => {
-            err ? console.log(err) : res.send(result[0]);
-        }
-    );
-})
-
-//Horarios
-app.get("/horarios", (req, res) => {
-    sql.query('SELECT * FROM horarios',
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
-app.get("/horario/:id", (req, res) => {
-    const id = req.params.id
-    sql.query('SELECT * FROM horarios WHERE idBarber = ?', id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
-
-app.post("/create-horario", (req, res) => {
-    const idBarber = req.body.idBarber
-    sql.query('INSERT INTO horarios(idBarber) VALUES(?)',
-        [idBarber],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-app.put("/update-horario", (req, res) => {
-    const idBarber = req.body.idBarber
-    const lunIn = req.body.lunIn
-    const lunOut = req.body.lunOut
-    const marIn = req.body.marIn
-    const marOut = req.body.marOut
-    const mieIn = req.body.mieIn
-    const mieOut = req.body.mieOut
-    const jueIn = req.body.jueIn
-    const jueOut = req.body.jueOut
-    const vieIn = req.body.vieIn
-    const vieOut = req.body.vieOut
-    const sabIn = req.body.sabIn
-    const sabOut = req.body.sabOut
-    const domIn = req.body.domIn
-    const domOut = req.body.domOut
-
-    sql.query('UPDATE horarios SET lunIn=?, lunOut=?, marIn=?, marOut=?, mieIn=?,mieOut=?,jueIn=?,jueOut=?,vieIn=?,vieOut=?,sabIn=?,sabOut=?,domIn=?,domOut=? WHERE idBarber = ?',
-        [lunIn, lunOut, marIn, marOut, mieIn, mieOut, jueIn, jueOut, vieIn, vieOut, sabIn, sabOut, domIn, domOut, idBarber],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-
-//Chequeos
-app.get("/chequeos", (req, res) => {
-    const query = 'SELECT dia, entrada, comidaInicio, comidaFin, salida, empleados.nombre from chequeos '
-        + 'inner join empleados on idBarber = empleados.id order by dia desc LIMIT 50'
-    sql.query(query, (err, result) => {
-        err ? console.log(err) : res.send(result);
+    try {
+        const result = await sql`
+            SELECT v.id, c.nombre AS cliente, total, descuento, subtotal, totalPuntos, metodoPago, b.nombre AS barber, s.nombre AS cobrador, fecha, pagoEfectivo, pagoTarjeta, pagoPuntos, v.municipio
+            FROM cobros AS v
+            INNER JOIN clientes AS c ON v.idCliente = c.id
+            INNER JOIN empleados AS b ON v.idBarber = b.id
+            INNER JOIN empleados AS s ON v.idCobrador = s.id
+            WHERE v.municipio = ${municipio}
+            ORDER BY fecha DESC
+            LIMIT 200
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener los cobros");
     }
-    );
-})
+});
 
-app.get("/chequeos-hoy", (req, res) => {
-    const query = 'SELECT dia, entrada, comidaInicio, comidaFin, salida, empleados.nombre from chequeos '
-        + "inner join empleados on idBarber = empleados.id WHERE DATE(dia) = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) order by dia desc"
-    sql.query(query, (err, result) => {
-        err ? console.log(err) : res.send(result);
+
+app.get("/cobros-hoy/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
+
+    try {
+        const result = await sql`
+            SELECT v.id, c.nombre AS cliente, total, descuento, subtotal, totalPuntos, metodoPago, b.nombre AS barber, s.nombre AS cobrador, fecha, pagoEfectivo, pagoTarjeta, pagoPuntos, v.municipio
+            FROM cobros AS v
+            INNER JOIN clientes AS c ON v.idCliente = c.id
+            INNER JOIN empleados AS b ON v.idBarber = b.id
+            INNER JOIN empleados AS s ON v.idCobrador = s.id
+            WHERE DATE(v.fecha) = CURRENT_DATE AND v.municipio = ${municipio}
+            ORDER BY fecha DESC
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener los cobros de hoy");
     }
-    );
-});
-
-app.get("/chequeo/:id", (req, res) => {
-    const id = req.params.id
-    sql.query("SELECT * FROM chequeos WHERE dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) AND idBarber = ?", id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
-
-app.get("/descanso/:id", (req, res) => {
-    const id = req.params.id
-    sql.query("SELECT comidaInicio, comidaFin from chequeos WHERE dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) AND idBarber = ?", id,
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-})
-
-app.post("/create-chequeos", (req, res) => {
-    const idBarber = req.body.idBarber
-    const municipio = req.body.municipio
-
-    sql.query('INSERT INTO chequeos(idBarber, municipio) VALUES(?,?)',
-        [idBarber, municipio],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-app.put("/iniciar-descanso", (req, res) => {
-    const idBarber = req.body.idBarber
-
-    sql.query("UPDATE chequeos SET comidaInicio = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))  WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
-        [idBarber],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-app.put("/finalizar-descanso", (req, res) => {
-    const idBarber = req.body.idBarber
-
-    sql.query("UPDATE chequeos SET comidaFin = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
-        [idBarber],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
-});
-app.put("/registrar-salida", (req, res) => {
-    const idBarber = req.body.idBarber
-
-    sql.query("UPDATE chequeos SET salida = TIME(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00')) WHERE idBarber = ? AND dia = DATE(CONVERT_TZ(utc_timestamp(), '+00:00', '-06:00'))",
-        [idBarber],
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
 });
 
 
+app.get("/cobro/:id", async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const result = await sql`
+            SELECT v.id, c.nombre AS cliente, total, descuento, subtotal, totalPuntos, metodoPago, b.nombre AS barber, s.nombre AS cobrador, fecha, pagoEfectivo, pagoTarjeta, pagoPuntos
+            FROM cobros AS v
+            INNER JOIN clientes AS c ON v.idCliente = c.id
+            INNER JOIN empleados AS b ON v.idBarber = b.id
+            INNER JOIN empleados AS s ON v.idCobrador = s.id
+            WHERE v.id = ${id}
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener el cobro");
+    }
+});
+
+app.post("/create-cobro", async (req, res) => {
+    const { idCliente, total, descuento, subtotal, totalPuntos, metodoPago, idBarber, idCobrador, pagoEfectivo, pagoTarjeta, pagoPuntos, municipio } = req.body;
+
+    try {
+        const result = await sql`
+            INSERT INTO cobros (idCliente, total, descuento, subtotal, totalPuntos, metodoPago, idBarber, idCobrador, pagoEfectivo, pagoTarjeta, pagoPuntos, municipio)
+            VALUES (${idCliente}, ${total}, ${descuento}, ${subtotal}, ${totalPuntos}, ${metodoPago}, ${idBarber}, ${idCobrador}, ${pagoEfectivo}, ${pagoTarjeta}, ${pagoPuntos}, ${municipio})
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al crear el cobro', err.stack);
+        res.status(500).send("Error al crear el cobro");
+    }
+});
+
+
+//#region Inventario puntos y caja
+app.get("/caja/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
+
+    try {
+        const result = await sql`
+            SELECT *
+            FROM caja
+            WHERE municipio = ${municipio}
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener la caja', err.stack);
+        res.status(500).send("Error al obtener la caja");
+    }
+});
+
+app.put("/update-caja", async (req, res) => {
+    const { id, efectivo, dineroElectronico, puntos } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE caja 
+            SET efectivo = efectivo + ${efectivo}, dineroElectronico = dineroElectronico + ${dineroElectronico}, puntos = puntos + ${puntos}
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al actualizar la caja', err.stack);
+        res.status(500).send("Error al actualizar la caja");
+    }
+});
+
+app.put("/update-cliente-pts", async (req, res) => {
+    const { id, pts } = req.body;
+
+    try {
+        const updateResult = await sql`
+            UPDATE clientes 
+            SET pts = pts + ${pts}
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(updateResult[0]);
+    } catch (err) {
+        console.error('Error al actualizar puntos', err.stack);
+        res.status(500).send("Error al actualizar puntos");
+    }
+});
+
+
+app.put("/update-inventario", async (req, res) => {
+    const { id, cantidad } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE productos 
+            SET enVenta = enVenta + ${cantidad}
+            WHERE id = ${id}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al actualizar inventario', err.stack);
+        res.status(500).send("Error al actualizar inventario");
+    }
+});
+
+
+app.post("/create-movimiento", async (req, res) => {
+    const { concepto, cantidad, idUsuario, municipio } = req.body;
+
+    try {
+        const result = await sql`
+            INSERT INTO movimientos (concepto, cantidad, idUsuario, municipio)
+            VALUES (${concepto}, ${cantidad}, ${idUsuario}, ${municipio})
+            RETURNING id
+        `;
+        const newMovimientoId = result[0].id;
+
+        const selectResult = await sql`
+            SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio 
+            FROM movimientos AS m 
+            INNER JOIN empleados ON idUsuario = empleados.id 
+            WHERE m.id = ${newMovimientoId}
+        `;
+        res.send(selectResult[0]);
+    } catch (err) {
+        console.error('Error al insertar movimiento', err.stack);
+        res.status(500).send("Error al insertar movimiento");
+    }
+});
+
+
+app.get("/movimientos/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
+
+    try {
+        const result = await sql`
+            SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio 
+            FROM movimientos AS m 
+            INNER JOIN empleados ON idUsuario = empleados.id 
+            WHERE DATE(m.fechaHora) != CURRENT_DATE AND m.municipio = ${municipio}
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener movimientos', err.stack);
+        res.status(500).send("Error al obtener movimientos");
+    }
+});
+
+app.get("/movimientos-hoy/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
+
+    try {
+        const result = await sql`
+            SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio 
+            FROM movimientos AS m 
+            INNER JOIN empleados ON idUsuario = empleados.id 
+            WHERE DATE(m.fechaHora) = CURRENT_DATE AND m.municipio = ${municipio}
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener movimientos de hoy', err.stack);
+        res.status(500).send("Error al obtener movimientos de hoy");
+    }
+});
+
+
+
+//#region Detalles de cobro de servicios y productos
+app.get("/detalles-servicio/:id", async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const result = await sql`
+            SELECT d.id, cantidad, s.nombre, precioActual, puntosActual, e.nombre AS barber
+            FROM detallescobroservicios AS d
+            INNER JOIN servicios AS s ON d.idServicio = s.id
+            LEFT JOIN empleados AS e ON d.idBarber = e.id
+            WHERE d.idCobro = ${id}
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener detalles del servicio', err.stack);
+        res.status(500).send("Error al obtener detalles del servicio");
+    }
+});
+
+
+app.post("/create-detalle-servicio", async (req, res) => {
+    const { idCobro, idServicio, cantidad, precioActual, puntosActual, idBarber } = req.body;
+
+    try {
+        const result = await sql`
+            INSERT INTO detallescobroservicios (idCobro, idServicio, cantidad, precioActual, puntosActual, idBarber)
+            VALUES (${idCobro}, ${idServicio}, ${cantidad}, ${precioActual}, ${puntosActual}, ${idBarber})
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al crear detalle del servicio', err.stack);
+        res.status(500).send("Error al crear detalle del servicio");
+    }
+});
+
+
+app.get("/detalles-producto/:id", async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const result = await sql`
+            SELECT d.id, cantidad, p.nombre, precioActual, puntosActual, e.nombre AS barber
+            FROM detallescobroproductos AS d
+            INNER JOIN productos AS p ON d.idProducto = p.id
+            LEFT JOIN empleados AS e ON d.idBarber = e.id
+            WHERE d.idCobro = ${id}
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener detalles del producto', err.stack);
+        res.status(500).send("Error al obtener detalles del producto");
+    }
+});
+
+app.post("/create-detalle-producto", async (req, res) => {
+    const { idCobro, idProducto, cantidad, precioActual, puntosActual, idBarber } = req.body;
+
+    try {
+        const result = await sql`
+            INSERT INTO detallescobroproductos (idCobro, idProducto, cantidad, precioActual, puntosActual, idBarber)
+            VALUES (${idCobro}, ${idProducto}, ${cantidad}, ${precioActual}, ${puntosActual}, ${idBarber})
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al crear detalle del producto', err.stack);
+        res.status(500).send("Error al crear detalle del producto");
+    }
+});
+
+
+
+//#region Reportes
+app.post("/create-reporte", async (req, res) => {
+    const { idBarber, montoEfectivo, montoElectronico, montoPts, municipio } = req.body;
+
+    try {
+        const result = await sql`
+            INSERT INTO reportes (idBarber, montoEfectivo, montoElectronico, montoPts, municipio)
+            VALUES (${idBarber}, ${montoEfectivo}, ${montoElectronico}, ${montoPts}, ${municipio})
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al crear el reporte', err.stack);
+        res.status(500).send("Error al crear el reporte");
+    }
+});
+
+app.get("/reporte-hoy/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
+
+    try {
+        const result = await sql`
+            SELECT id 
+            FROM reportes 
+            WHERE DATE(fecha) = CURRENT_DATE AND municipio = ${municipio}
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al obtener el reporte de hoy', err.stack);
+        res.status(500).send("Error al obtener el reporte de hoy");
+    }
+});
+
+
+//#region Horarios
+app.get("/horarios", async (req, res) => {
+    try {
+        const result = await sql`
+            SELECT * 
+            FROM horarios
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener horarios', err.stack);
+        res.status(500).send("Error al obtener horarios");
+    }
+});
+
+app.post("/create-horario", async (req, res) => {
+    const { idBarber } = req.body;
+
+    try {
+        const result = await sql`
+            INSERT INTO horarios (idBarber)
+            VALUES (${idBarber})
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al crear horario', err.stack);
+        res.status(500).send("Error al crear horario");
+    }
+});
+
+
+app.put("/update-horario", async (req, res) => {
+    const { idBarber, lunIn, lunOut, marIn, marOut, mieIn, mieOut, jueIn, jueOut, vieIn, vieOut, sabIn, sabOut, domIn, domOut } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE horarios
+            SET lunIn = ${lunIn}, lunOut = ${lunOut}, marIn = ${marIn}, marOut = ${marOut}, 
+                mieIn = ${mieIn}, mieOut = ${mieOut}, jueIn = ${jueIn}, jueOut = ${jueOut}, 
+                vieIn = ${vieIn}, vieOut = ${vieOut}, sabIn = ${sabIn}, sabOut = ${sabOut}, 
+                domIn = ${domIn}, domOut = ${domOut}
+            WHERE idBarber = ${idBarber}
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al actualizar el horario', err.stack);
+        res.status(500).send("Error al actualizar el horario");
+    }
+});
+
+
+//#region Chequeos
+app.get("/chequeos", async (req, res) => {
+    try {
+        const result = await sql`
+            SELECT dia, entrada, comidaInicio, comidaFin, salida, empleados.nombre
+            FROM chequeos
+            INNER JOIN empleados ON idBarber = empleados.id
+            ORDER BY dia DESC
+            LIMIT 50
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener chequeos', err.stack);
+        res.status(500).send("Error al obtener chequeos");
+    }
+});
+
+app.get("/chequeos-hoy", async (req, res) => {
+    try {
+        const result = await sql`
+            SELECT dia, entrada, comidaInicio, comidaFin, salida, empleados.nombre
+            FROM chequeos
+            INNER JOIN empleados ON idBarber = empleados.id
+            WHERE DATE(dia) = CURRENT_DATE
+            ORDER BY dia DESC
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener chequeos de hoy', err.stack);
+        res.status(500).send("Error al obtener chequeos de hoy");
+    }
+});
+
+app.get("/chequeo/:id", async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const result = await sql`
+            SELECT * 
+            FROM chequeos 
+            WHERE DATE(dia) = CURRENT_DATE AND idBarber = ${id}
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener chequeo', err.stack);
+        res.status(500).send("Error al obtener chequeo");
+    }
+});
+
+app.get("/descanso/:id", async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const result = await sql`
+            SELECT comidaInicio, comidaFin 
+            FROM chequeos 
+            WHERE DATE(dia) = CURRENT_DATE AND idBarber = ${id}
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener descanso', err.stack);
+        res.status(500).send("Error al obtener descanso");
+    }
+});
+
+app.post("/create-chequeos", async (req, res) => {
+    const { idBarber, municipio } = req.body;
+
+    try {
+        const result = await sql`
+            INSERT INTO chequeos (idBarber, municipio)
+            VALUES (${idBarber}, ${municipio})
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al crear chequeo', err.stack);
+        res.status(500).send("Error al crear chequeo");
+    }
+});
+
+app.put("/iniciar-descanso", async (req, res) => {
+    const { idBarber } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE chequeos
+            SET comidaInicio = CURRENT_TIME
+            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al iniciar descanso', err.stack);
+        res.status(500).send("Error al iniciar descanso");
+    }
+});
+
+app.put("/finalizar-descanso", async (req, res) => {
+    const { idBarber } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE chequeos
+            SET comidaFin = CURRENT_TIME
+            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al finalizar descanso', err.stack);
+        res.status(500).send("Error al finalizar descanso");
+    }
+});
+
+app.put("/registrar-salida", async (req, res) => {
+    const { idBarber } = req.body;
+
+    try {
+        const result = await sql`
+            UPDATE chequeos
+            SET salida = CURRENT_TIME
+            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE
+            RETURNING *
+        `;
+        res.send(result[0]);
+    } catch (err) {
+        console.error('Error al registrar salida', err.stack);
+        res.status(500).send("Error al registrar salida");
+    }
+});
+
+//#region Final ListenPort
 app.listen(port, () => {
     console.log("Corriendo en el puerto " + port)
 })
