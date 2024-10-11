@@ -144,7 +144,7 @@ app.get("/clientes/search", async (req, res) => {
     const text = `%${req.query.text}%`;
 
     try {
-        const result = await sql`SELECT * FROM clientes WHERE municipio ILIKE ${text} ORDER BY nombre LIMIT 7`;
+        const result = await sql`SELECT * FROM clientes WHERE nombre ILIKE ${text} OR telefono ILIKE ${text} ORDER BY nombre LIMIT 7`;
         res.send(result);
     } catch (error) {
         console.error('Error executing query', error.stack);
