@@ -128,7 +128,7 @@ app.get("/clientes", async (req, res) => {
 });
 
 
-app.get("/clientes/:municipio", async (req, res) => {
+app.get("/clientes/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
     try {
@@ -313,7 +313,7 @@ app.get("/empleados", async (req, res) => {
 });
 
 
-app.get("/empleados/:municipio", async (req, res) => {
+app.get("/empleados/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
     try {
@@ -706,7 +706,7 @@ app.get("/empleado/:id", async (req, res) => {
 
 
 //#region Funciones para los servicios
-app.get("/servicios/:municipio", async (req, res) => {
+app.get("/servicios/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
     try {
@@ -792,7 +792,7 @@ app.get("/servicio/:id", async (req, res) => {
     }
 });
 
-app.get("/servicios/search/:municipio", async (req, res) => {
+app.get("/servicios/search/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
     const text = `%${req.query.text}%`;
 
@@ -811,7 +811,7 @@ app.get("/servicios/search/:municipio", async (req, res) => {
     }
 });
 
-app.get("/productos/search/:municipio", async (req, res) => {
+app.get("/productos/search/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
     const text = `%${req.query.text}%`;
 
@@ -832,7 +832,7 @@ app.get("/productos/search/:municipio", async (req, res) => {
 
 
 //#region Funciones para los productos
-app.get("/productos/:municipio", async (req, res) => {
+app.get("/productos/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
     try {
@@ -982,7 +982,7 @@ app.delete("/delete-permisos/:id", async (req, res) => {
 
 
 //#region Funciones para los cobros o ventas
-app.get("/cobros/:municipio", async (req, res) => {
+app.get("/cobros/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
     try {
@@ -1004,7 +1004,7 @@ app.get("/cobros/:municipio", async (req, res) => {
 });
 
 
-app.get("/cobros-hoy/:municipio", async (req, res) => {
+app.get("/cobros-hoy/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
     try {
@@ -1062,7 +1062,7 @@ app.post("/create-cobro", async (req, res) => {
 
 
 //#region Inventario puntos y caja
-app.get("/caja/:municipio", async (req, res) => {
+app.get("/caja/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
     try {
@@ -1156,7 +1156,7 @@ app.post("/create-movimiento", async (req, res) => {
 });
 
 
-app.get("/movimientos/:municipio", async (req, res) => {
+app.get("/movimientos/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
     try {
@@ -1173,7 +1173,7 @@ app.get("/movimientos/:municipio", async (req, res) => {
     }
 });
 
-app.get("/movimientos-hoy/:municipio", async (req, res) => {
+app.get("/movimientos-hoy/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
     try {
@@ -1282,7 +1282,7 @@ app.post("/create-reporte", async (req, res) => {
     }
 });
 
-app.get("/reporte-hoy/:municipio", async (req, res) => {
+app.get("/reporte-hoy/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
 
     try {
