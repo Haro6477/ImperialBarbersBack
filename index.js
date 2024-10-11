@@ -140,6 +140,19 @@ app.get("/clientes/:municipio", async (req, res) => {
     }
 });
 
+app.get("/clientes/search", async (req, res) => {
+    const text = `%${req.query.text}%`;
+
+    try {
+        const result = await sql`SELECT * FROM clientes WHERE municipio ILIKE ${text} ORDER BY nombre LIMIT 7`;
+        res.send(result);
+    } catch (error) {
+        console.error('Error executing query', error.stack);
+        res.status(500).send('Error interno del servidor');
+    }
+});
+
+
 app.post("/create-cliente", async (req, res) => {
     const nombre = req.body.nombre;
     const telefono = req.body.telefono;
@@ -283,7 +296,6 @@ app.put("/update-cuenta", async (req, res) => {
     }
 });
 
-
 //#region Funciones para los empleados
 app.get("/empleados", async (req, res) => {
     try {
@@ -344,6 +356,8 @@ const formatearFecha = (fecha) => {
     const fechaFormateada = yyyy + '-' + mm + '-' + dd;
     return fechaFormateada
 }
+
+
 
 app.get("/servicios-semana-all/:id", async (req, res) => {
     const id = req.params.id;
@@ -778,6 +792,45 @@ app.get("/servicio/:id", async (req, res) => {
     }
 });
 
+app.get("/servicios/search/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
+    const text = `%${req.query.text}%`;
+
+    try {
+        const result = await sql`
+            SELECT * FROM servicios 
+            WHERE municipio = ${municipio} 
+              AND nombre ILIKE ${text}
+            ORDER BY nombre 
+            LIMIT 7
+        `;
+        res.send(result);
+    } catch (error) {
+        console.error('Error executing query', error.stack);
+        res.status(500).send('Error interno del servidor');
+    }
+});
+
+app.get("/productos/search/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
+    const text = `%${req.query.text}%`;
+
+    try {
+        const result = await sql`
+            SELECT * FROM productos 
+            WHERE municipio = ${municipio} 
+              AND (nombre || ' ' || marca || ' ' || linea || ' ' || contenido) ILIKE ${text}
+            ORDER BY nombre 
+            LIMIT 7
+        `;
+        res.send(result);
+    } catch (error) {
+        console.error('Error executing query', error.stack);
+        res.status(500).send('Error interno del servidor');
+    }
+});
+
+
 //#region Funciones para los productos
 app.get("/productos/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
@@ -867,6 +920,13 @@ app.get("/producto/:id", async (req, res) => {
     }
 });
 
+app.get("/permisos", (req, res) => {
+    sql.query('SELECT * FROM permisos order by permiso',
+        (err, result) => {
+            err ? console.log(err) : res.send(result);
+        }
+    );
+})
 
 app.get("/permisos-usuario/:id", async (req, res) => {
     const id = req.params.id;
