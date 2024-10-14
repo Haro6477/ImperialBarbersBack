@@ -1216,6 +1216,7 @@ app.get("/detalles-servicio/:id", async (req, res) => {
 
 
 app.post("/create-detalle-servicio", async (req, res) => {
+    console.log(req.body);  // Para revisar qué datos llegan al backend
     const { idCobro, idServicio, cantidad, precioActual, puntosActual, idBarber } = req.body;
 
     try {
@@ -1230,6 +1231,7 @@ app.post("/create-detalle-servicio", async (req, res) => {
         res.status(500).send("Error al crear detalle del servicio");
     }
 });
+
 
 
 app.get("/detalles-producto/:id", async (req, res) => {
