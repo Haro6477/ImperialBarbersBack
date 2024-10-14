@@ -1017,7 +1017,7 @@ app.get("/cobros-hoy/municipio/:municipio", async (req, res) => {
             INNER JOIN clientes AS c ON v.idCliente = c.id
             INNER JOIN empleados AS b ON v.idBarber = b.id
             INNER JOIN empleados AS s ON v.idCobrador = s.id
-            WHERE DATE(v.fecha) = CURRENT_DATE AND v.municipio = ${municipio}
+            WHERE DATE(v.fecha AT TIME ZONE 'America/Mexico_City') = CURRENT_DATE AND v.municipio = ${municipio}
             ORDER BY fecha DESC
         `;
         res.send(result);
@@ -1167,7 +1167,7 @@ app.get("/movimientos/municipio/:municipio", async (req, res) => {
             SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio 
             FROM movimientos AS m 
             INNER JOIN empleados ON idUsuario = empleados.id 
-            WHERE DATE(m.fechaHora) != CURRENT_DATE AND m.municipio = ${municipio}
+            WHERE DATE(m.fechaHora AT TIME ZONE 'America/Mexico_City') != CURRENT_DATE AND m.municipio = ${municipio}
         `;
         res.send(result);
     } catch (err) {
