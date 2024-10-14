@@ -920,12 +920,15 @@ app.get("/producto/:id", async (req, res) => {
     }
 });
 
-app.get("/permisos", (req, res) => {
-    sql.query('SELECT * FROM permisos order by permiso',
-        (err, result) => {
-            err ? console.log(err) : res.send(result);
-        }
-    );
+app.get("/permisos", async (req, res) => {
+    try {
+        const result = await sql`
+            SELECT * FROM permisos order by permiso`;
+        res.send(result);
+    } catch (err) {
+        console.error('Error al obtener los permisos', err.stack);
+        res.status(500).send("Error al obtener los permisos");
+    }
 })
 
 app.get("/permisos-usuario/:id", async (req, res) => {
