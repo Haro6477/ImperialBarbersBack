@@ -119,11 +119,16 @@ app.get('/puntos/:id', async (req, res) => {
 
 app.get("/clientes", async (req, res) => {
     try {
-        const result = await sql`SELECT * FROM clientes order by nombre`;
+        const result = await sql`SELECT clientes.id, nombre, telefono, pts, fechaNacimiento, clientes.municipio, MAX(fecha) AS fecha
+            FROM clientes
+            INNER JOIN cobros ON idCliente = clientes.id
+            GROUP BY clientes.id, nombre, telefono, pts, fechaNacimiento, clientes.municipio
+            ORDER BY MAX(fecha) DESC
+            LIMIT 50;`;
         res.send(result);
     } catch (error) {
         console.error('Error executing query', error.stack);
-        res.status(500).send('Error interno del servidor');
+        res.status(500).send('Error al obtener clientes');
     }
 });
 
@@ -144,7 +149,7 @@ app.get("/clientes/search", async (req, res) => {
     const text = `%${req.query.text}%`;
 
     try {
-        const result = await sql`SELECT * FROM clientes WHERE nombre ILIKE ${text} OR telefono ILIKE ${text} ORDER BY nombre LIMIT 7`;
+        const result = await sql`SELECT * FROM clientes WHERE nombre ILIKE ${text} OR telefono ILIKE ${text} ORDER BY nombre LIMIT 20`;
         res.send(result);
     } catch (error) {
         console.error('Error executing query', error.stack);
