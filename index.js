@@ -119,18 +119,25 @@ app.get('/puntos/:id', async (req, res) => {
 
 app.get("/clientes", async (req, res) => {
     try {
-        const result = await sql`SELECT clientes.id, nombre, telefono, pts, fechaNacimiento, clientes.municipio, MAX(fecha) AS fecha
+        const clientes = await sql`SELECT clientes.id, nombre, telefono, pts, fechaNacimiento, clientes.municipio, MAX(fecha) AS fecha
             FROM clientes
             INNER JOIN cobros ON idCliente = clientes.id
             GROUP BY clientes.id, nombre, telefono, pts, fechaNacimiento, clientes.municipio
             ORDER BY MAX(fecha) DESC
             LIMIT 50;`;
-        res.send(result);
+
+        const totalClientes = await sql`SELECT COUNT(*) AS total FROM clientes`;
+
+        res.send({
+            clientes,
+            totalClientes: totalClientes[0].total
+        });
     } catch (error) {
         console.error('Error executing query', error.stack);
-        res.status(500).send('Error al obtener clientes');
+        res.status(500).send('Error al obtener datos de clientes');
     }
 });
+
 
 
 app.get("/clientes/municipio/:municipio", async (req, res) => {
