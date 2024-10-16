@@ -119,7 +119,7 @@ app.get('/puntos/:id', async (req, res) => {
 
 app.get("/clientes", async (req, res) => {
     try {
-        const clientes = await sql`SELECT clientes.id, nombre, telefono, pts, fechaNacimiento, clientes.municipio, MAX(fecha) AS fecha
+        const clientes = await sql`SELECT clientes.id, nombre, telefono, pts, fechaNacimiento, genero, clientes.municipio, MAX(fecha) AS fecha
             FROM clientes
             INNER JOIN cobros ON idCliente = clientes.id
             GROUP BY clientes.id, nombre, telefono, pts, fechaNacimiento, clientes.municipio
