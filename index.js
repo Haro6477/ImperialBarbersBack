@@ -197,7 +197,10 @@ app.put("/update-cliente", async (req, res) => {
     const fechaNacimiento = req.body.fechaNacimiento;
     const codigoQR = req.body.codigoQR || null;
     const municipio = req.body.municipio;
-
+console.log(`UPDATE clientes 
+            SET nombre = ${nombre}, telefono = ${telefono}, pts = ${pts}, genero = ${genero}, 
+                fechaNacimiento = ${fechaNacimiento}, codigoQR = ${codigoQR}, municipio = ${municipio}
+            WHERE id = ${id}`)
     try {
         const result = await sql`
             UPDATE clientes 
