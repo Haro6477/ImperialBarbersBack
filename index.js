@@ -171,7 +171,7 @@ app.post("/create-cliente", async (req, res) => {
     const pts = req.body.pts;
     const genero = req.body.genero;
     const fechaNacimiento = req.body.fechaNacimiento;
-    const codigoQR = req.body.codigoQR;
+    const codigoQR = req.body.codigoQR || null;
     const municipio = req.body.municipio;
 
     try {
@@ -195,7 +195,7 @@ app.put("/update-cliente", async (req, res) => {
     const pts = req.body.pts;
     const genero = req.body.genero;
     const fechaNacimiento = req.body.fechaNacimiento;
-    const codigoQR = req.body.codigoQR;
+    const codigoQR = req.body.codigoQR || null;
     const municipio = req.body.municipio;
 
     try {
