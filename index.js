@@ -965,11 +965,11 @@ app.get("/permisos-usuario/:id", async (req, res) => {
 
 app.post("/create-permisos", async (req, res) => {
     const permisos = req.body.permisos;
-    let values = permisos.map(permiso => `(${permiso.permiso}, ${permiso.idEmpleado})`).join(',');
+    const values = permisos.map(permiso => [permiso.permiso, permiso.idEmpleado]);
 
     try {
         const result = await sql`
-            INSERT INTO permisos (permiso, idEmpleado) 
+            INSERT INTO permisos (permiso, idempleado) 
             VALUES ${sql(values)}
             RETURNING *
         `;
