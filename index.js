@@ -154,9 +154,17 @@ app.get("/clientes/municipio/:municipio", async (req, res) => {
 
 app.get("/clientes/search", async (req, res) => {
     const text = `%${req.query.text}%`;
+    const similarityScore = 0.25;
 
     try {
-        const result = await sql`SELECT * FROM clientes WHERE nombre ILIKE ${text} OR telefono ILIKE ${text} ORDER BY nombre LIMIT 20`;
+        const result = await sql`
+            SELECT *
+            FROM clientes
+            WHERE SIMILARITY(nombre, ${text}) > ${similarityScore} 
+              OR telefono = ${text}
+            ORDER BY SIMILARITY(nombre, ${text}) DESC, nombre
+            LIMIT 20
+        `;
         res.send(result);
     } catch (error) {
         console.error('Error executing query', error.stack);
@@ -197,10 +205,6 @@ app.put("/update-cliente", async (req, res) => {
     const fechaNacimiento = req.body.fechaNacimiento;
     const codigoQR = req.body.codigoQR || null;
     const municipio = req.body.municipio;
-console.log(`UPDATE clientes 
-            SET nombre = ${nombre}, telefono = ${telefono}, pts = ${pts}, genero = ${genero}, 
-                fechaNacimiento = ${fechaNacimiento}, codigoQR = ${codigoQR}, municipio = ${municipio}
-            WHERE id = ${id}`)
     try {
         const result = await sql`
             UPDATE clientes 
@@ -521,22 +525,6 @@ app.get("/productos-semana/:id", async (req, res) => {
         res.status(500).send("Error al obtener los productos de la semana para el barber.");
     }
 });
-
-app.get("/fotos-empleados", async (req, res) => {
-    try {
-        const result = await sql`SELECT id, foto FROM empleados`;
-        result.map(img => {
-            if (img.foto)
-                fs.writeFileSync(path.join(__dirname, './dbimages/empleado' + img.id + '.webp'), img.foto);
-        });
-        const imagedir = fs.readdirSync(path.join(__dirname, './dbimages/'));
-        res.json(imagedir);
-    } catch (err) {
-        console.error('Error executing query', err.stack);
-        res.status(500).send("Error al obtener las fotos de los empleados.");
-    }
-});
-
 
 app.get("/foto-empleado/:id", async (req, res) => {
     const id = req.params.id;
@@ -1231,7 +1219,6 @@ app.get("/detalles-servicio/:id", async (req, res) => {
 
 
 app.post("/create-detalle-servicio", async (req, res) => {
-    console.log(req.body);  // Para revisar qué datos llegan al backend
     const { idCobro, idServicio, cantidad, precioActual, puntosActual, idBarber } = req.body;
 
     try {
