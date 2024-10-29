@@ -124,7 +124,7 @@ app.get("/clientes", async (req, res) => {
             INNER JOIN cobros ON idCliente = clientes.id
             GROUP BY clientes.id, nombre, telefono, pts, fechaNacimiento, clientes.municipio
             ORDER BY MAX(fecha) DESC
-            LIMIT 50;`;
+            LIMIT 20;`;
 
         const totalClientes = await sql`SELECT COUNT(*) AS total FROM clientes`;
 
@@ -161,7 +161,7 @@ app.get("/clientes/search", async (req, res) => {
             SELECT *
             FROM clientes
             WHERE SIMILARITY(nombre, ${text}) > ${similarityScore} 
-              OR telefono = ${text}
+              OR telefono ILIKE ${text}
             ORDER BY SIMILARITY(nombre, ${text}) DESC, nombre
             LIMIT 20
         `;
@@ -1020,7 +1020,7 @@ app.get("/cobros-hoy/municipio/:municipio", async (req, res) => {
             INNER JOIN clientes AS c ON v.idCliente = c.id
             INNER JOIN empleados AS b ON v.idBarber = b.id
             INNER JOIN empleados AS s ON v.idCobrador = s.id
-            WHERE DATE(v.fecha AT TIME ZONE 'UTC' AT TIME ZONE 'America/Mexico_City') = CURRENT_DATE AND v.municipio = ${municipio}
+            WHERE DATE(v.fecha AT TIME ZONE 'UTC' AT TIME ZONE 'America/Mexico_City') = CURRENT_DATE AT TIME ZONE 'America/Mexico_City' AND v.municipio = ${municipio}
             ORDER BY fecha DESC
         `;
         res.send(result);
@@ -1170,7 +1170,7 @@ app.get("/movimientos/municipio/:municipio", async (req, res) => {
             SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio 
             FROM movimientos AS m 
             INNER JOIN empleados ON idUsuario = empleados.id 
-            WHERE DATE(v.fecha AT TIME ZONE 'UTC' AT TIME ZONE 'America/Mexico_City') != CURRENT_DATE AND m.municipio = ${municipio}
+            WHERE DATE(v.fecha AT TIME ZONE 'UTC' AT TIME ZONE 'America/Mexico_City') != CURRENT_DATE AT TIME ZONE 'America/Mexico_City' AND m.municipio = ${municipio}
         `;
         res.send(result);
     } catch (err) {
@@ -1187,7 +1187,7 @@ app.get("/movimientos-hoy/municipio/:municipio", async (req, res) => {
             SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio 
             FROM movimientos AS m 
             INNER JOIN empleados ON idUsuario = empleados.id 
-            WHERE DATE(m.fechaHora) = CURRENT_DATE AND m.municipio = ${municipio}
+            WHERE DATE(m.fechaHora) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City' AND m.municipio = ${municipio}
         `;
         res.send(result);
     } catch (err) {
@@ -1296,7 +1296,7 @@ app.get("/reporte-hoy/municipio/:municipio", async (req, res) => {
         const result = await sql`
             SELECT id 
             FROM reportes 
-            WHERE DATE(fecha) = CURRENT_DATE AND municipio = ${municipio}
+            WHERE DATE(fecha) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City' AND municipio = ${municipio}
         `;
         res.send(result[0]);
     } catch (err) {
@@ -1381,7 +1381,7 @@ app.get("/chequeos-hoy", async (req, res) => {
             SELECT dia, entrada, comidaInicio, comidaFin, salida, empleados.nombre
             FROM chequeos
             INNER JOIN empleados ON idBarber = empleados.id
-            WHERE DATE(dia) = CURRENT_DATE
+            WHERE DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City'
             ORDER BY dia DESC
         `;
         res.send(result);
@@ -1398,7 +1398,7 @@ app.get("/chequeo/:id", async (req, res) => {
         const result = await sql`
             SELECT * 
             FROM chequeos 
-            WHERE DATE(dia) = CURRENT_DATE AND idBarber = ${id}
+            WHERE DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City' AND idBarber = ${id}
         `;
         res.send(result);
     } catch (err) {
@@ -1414,7 +1414,7 @@ app.get("/descanso/:id", async (req, res) => {
         const result = await sql`
             SELECT comidaInicio, comidaFin 
             FROM chequeos 
-            WHERE DATE(dia) = CURRENT_DATE AND idBarber = ${id}
+            WHERE DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City' AND idBarber = ${id}
         `;
         res.send(result);
     } catch (err) {
@@ -1445,8 +1445,8 @@ app.put("/iniciar-descanso", async (req, res) => {
     try {
         const result = await sql`
             UPDATE chequeos
-            SET comidaInicio = CURRENT_TIME
-            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE
+            SET comidaInicio = CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City'
+            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City'
             RETURNING *
         `;
         res.send(result[0]);
@@ -1463,7 +1463,7 @@ app.put("/finalizar-descanso", async (req, res) => {
         const result = await sql`
             UPDATE chequeos
             SET comidaFin = CURRENT_TIME
-            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE
+            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City'
             RETURNING *
         `;
         res.send(result[0]);
@@ -1479,8 +1479,8 @@ app.put("/registrar-salida", async (req, res) => {
     try {
         const result = await sql`
             UPDATE chequeos
-            SET salida = CURRENT_TIME
-            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE
+            SET salida = CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City'
+            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City'
             RETURNING *
         `;
         res.send(result[0]);
