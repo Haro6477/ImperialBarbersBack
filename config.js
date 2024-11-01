@@ -8,10 +8,8 @@ const DB_PORT = process.env.DB_PORT || 5432
 
 // Cargar las variables de entorno
 
-module.exports = {
-  host: DB_HOST,
-  username: DB_USER,
-  password: DB_PASSWORD,
-  database: DB_NAME,
-  port: DB_PORT,
-};
+export const host = DB_HOST;
+export const username = DB_USER;
+export const password = DB_PASSWORD;
+export const database = DB_NAME;
+export const port = DB_PORT;

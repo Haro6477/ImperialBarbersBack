@@ -1,10 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const mysql = require("mysql2");
-const multer = require('multer')
 const path = require('path')
-const fs = require('fs');
-const sharp = require('sharp');
 const postgres = require('postgres');
 
 //#region Crear una instancia de express
@@ -23,10 +19,7 @@ const corsOptions = {
 
 //#region Aquí puedes usar el paquete cors con las opciones que creaste
 app.use(cors(corsOptions));
-
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'dbimages')))
-app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 
 
@@ -529,14 +522,9 @@ app.get("/productos-semana/:id", async (req, res) => {
 app.get("/foto-empleado/:id", async (req, res) => {
     const id = req.params.id;
     try {
-        const result = await sql`SELECT id, foto FROM empleados WHERE id = ${id}`;
-        if (result[0].foto) {
-            const dir = path.join(__dirname, './dbimages');
-
-            if (!fs.existsSync(dir)) fs.mkdirSync(dir);
-
-            fs.writeFileSync(path.join(dir, 'empleado' + result[0].id + '.webp'), result[0].foto);
-            res.json('empleado' + result[0].id + '.webp');
+        const result = await sql`SELECT foto FROM empleados WHERE id = ${id}`;
+        if (result[0]) {
+            res.json(result[0]);
         } else {
             res.json(null);
         }
@@ -635,38 +623,16 @@ app.put("/update-empleado-municipio", async (req, res) => {
 });
 
 
-const diskStorage = multer.diskStorage({
-    destination: path.join(__dirname, './images'),
-    filename: (req, file, cb) => {
-        cb(null, file.originalname)
-    }
-})
-
-const fileUpload = multer({
-    storage: diskStorage
-}).single('image')
-
-
-app.put('/update-foto-empleado', fileUpload, async (req, res) => {
-    const { id } = req.body;
-    const imagePath = path.join(__dirname, './images/' + req.file.filename);
-
-    const width = 420;
-    const format = 'webp';
+app.put('/update-foto-empleado', async (req, res) => {
+    const { id, urlFoto } = req.body;
 
     try {
-        const data = await sharp(imagePath)
-            .resize(width)
-            .toFormat(format)
-            .toBuffer();
-
         const result = await sql`
             UPDATE empleados 
-            SET foto = ${data}
+            SET foto = ${urlFoto}
             WHERE id = ${id}
-            RETURNING *
         `;
-        res.send("Foto actualizada\nActualizar para mostrar cambios");
+        res.send("Foto actualizada");
     } catch (err) {
         console.error('Error al actualizar la foto del empleado', err.stack);
         res.status(500).send('Error al procesar la imagen');
