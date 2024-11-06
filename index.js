@@ -537,7 +537,10 @@ app.get("/foto-empleado/:id", async (req, res) => {
 
 app.post("/create-empleado", async (req, res) => {
     const { usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, foto, municipio } = req.body;
-    try {
+    if (telefono.length > 15) {
+        return res.status(400).send("El teléfono debe tener como máximo 15 caracteres.");
+    }
+    try { // La siguiente es la linea 541
         const result = await sql`
             INSERT INTO empleados (usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, foto, municipio)
             VALUES (${usuario}, ${pass}, ${nombre}, ${telefono}, ${correo}, ${fechaNacimiento}, ${fechaInicio}, ${puesto}, ${estatus}, ${foto}, ${municipio})
@@ -1068,7 +1071,10 @@ app.put("/update-caja", async (req, res) => {
 });
 
 app.put("/update-cliente-pts", async (req, res) => {
-    const { id, pts } = req.body;
+    let { id, pts } = req.body;
+
+    // Truncar los puntos a un número entero
+    pts = Math.trunc(pts);
 
     try {
         const updateResult = await sql`
@@ -1083,7 +1089,6 @@ app.put("/update-cliente-pts", async (req, res) => {
         res.status(500).send("Error al actualizar puntos");
     }
 });
-
 
 app.put("/update-inventario", async (req, res) => {
     const { id, cantidad } = req.body;
