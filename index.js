@@ -185,7 +185,7 @@ app.post("/create-cliente", async (req, res) => {
             VALUES (${nombre}, ${telefono}, ${pts}, ${genero}, ${fechaNacimiento}, ${codigoQR}, ${municipio})
             RETURNING *
         `;
-        res.send(result[0]);
+        res.send(result);
     } catch (err) {
         console.error('Error executing query', err.stack);
         res.status(500).send("Error al insertar el cliente");
