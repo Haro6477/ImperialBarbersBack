@@ -175,6 +175,10 @@ app.post("/create-cliente", async (req, res) => {
     const codigoQR = req.body.codigoQR || null;
     const municipio = req.body.municipio;
 
+    if (telefono.length > 15) {
+        return res.status(400).send("El teléfono debe tener como máximo 15 caracteres.");
+    }
+
     try {
         const result = await sql`
             INSERT INTO clientes (nombre, telefono, pts, genero, fechaNacimiento, codigoQR, municipio)
