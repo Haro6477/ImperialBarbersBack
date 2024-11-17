@@ -156,7 +156,7 @@ app.get("/clientes/search", async (req, res) => {
             WHERE SIMILARITY(nombre, ${text}) > ${similarityScore} 
               OR telefono ILIKE ${text}
             ORDER BY SIMILARITY(nombre, ${text}) DESC, nombre
-            LIMIT 20
+            LIMIT 8
         `;
         res.send(result);
     } catch (error) {
