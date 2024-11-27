@@ -1375,6 +1375,7 @@ app.get("/chequeo/:id", async (req, res) => {
             FROM chequeos 
             WHERE dia = (CURRENT_DATE AT TIME ZONE 'America/Mexico_City')::date AND idBarber = ${id}
         `;
+        console.log(result)
         res.send(result);
     } catch (err) {
         console.error('Error al obtener chequeo', err.stack);
