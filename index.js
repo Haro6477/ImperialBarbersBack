@@ -1373,7 +1373,7 @@ app.get("/chequeo/:id", async (req, res) => {
         const result = await sql`
             SELECT * 
             FROM chequeos 
-            WHERE DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City' AND idBarber = ${id}
+            WHERE dia = (CURRENT_DATE AT TIME ZONE 'America/Mexico_City')::date AND idBarber = ${id}
         `;
         res.send(result);
     } catch (err) {
