@@ -1373,7 +1373,7 @@ app.get("/chequeo/:id", async (req, res) => {
         const result = await sql`
             SELECT * 
             FROM chequeos 
-            WHERE dia = (CURRENT_DATE AT TIME ZONE 'America/Mexico_City')::date AND idBarber = ${id}
+            WHERE dia = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date AND idBarber = ${id}
         `;
         console.log(result)
         res.send(result);
@@ -1382,6 +1382,7 @@ app.get("/chequeo/:id", async (req, res) => {
         res.status(500).send("Error al obtener chequeo");
     }
 });
+
 
 app.get("/descanso/:id", async (req, res) => {
     const id = req.params.id;
