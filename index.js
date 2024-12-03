@@ -1406,7 +1406,7 @@ app.post("/create-chequeos", async (req, res) => {
     try {
         const result = await sql`
             INSERT INTO chequeos (idBarber, municipio, dia)
-            VALUES (${idBarber}, ${municipio}, CURRENT_DATE AT TIME ZONE 'America/Mexico_City')
+            VALUES (${idBarber}, ${municipio}, (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date)
             RETURNING *
         `;
         res.send(result[0]);
