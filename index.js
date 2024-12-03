@@ -1356,7 +1356,7 @@ app.get("/chequeos-hoy", async (req, res) => {
             SELECT dia, entrada, comidaInicio, comidaFin, salida, empleados.nombre
             FROM chequeos
             INNER JOIN empleados ON idBarber = empleados.id
-            WHERE DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City'
+            WHERE dia = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
             ORDER BY dia DESC
         `;
         res.send(result);
