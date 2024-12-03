@@ -1391,7 +1391,7 @@ app.get("/descanso/:id", async (req, res) => {
         const result = await sql`
             SELECT comidaInicio, comidaFin 
             FROM chequeos 
-            WHERE DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City' AND idBarber = ${id}
+            WHERE dia = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date AND idBarber = ${id}
         `;
         res.send(result);
     } catch (err) {
