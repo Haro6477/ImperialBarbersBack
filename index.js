@@ -1423,7 +1423,7 @@ app.put("/iniciar-descanso", async (req, res) => {
         const result = await sql`
             UPDATE chequeos
             SET comidaInicio = CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City'
-            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City'
+            WHERE idBarber = ${idBarber} AND dia = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
             RETURNING *
         `;
         res.send(result[0]);
@@ -1440,7 +1440,7 @@ app.put("/finalizar-descanso", async (req, res) => {
         const result = await sql`
             UPDATE chequeos
             SET comidaFin = CURRENT_TIME
-            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City'
+            WHERE idBarber = ${idBarber} AND dia = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
             RETURNING *
         `;
         res.send(result[0]);
@@ -1457,7 +1457,7 @@ app.put("/registrar-salida", async (req, res) => {
         const result = await sql`
             UPDATE chequeos
             SET salida = CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City'
-            WHERE idBarber = ${idBarber} AND DATE(dia) = CURRENT_DATE AT TIME ZONE 'America/Mexico_City'
+            WHERE idBarber = ${idBarber} AND dia = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
             RETURNING *
         `;
         res.send(result[0]);
