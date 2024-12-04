@@ -632,6 +632,8 @@ app.put("/update-empleado-municipio", async (req, res) => {
 
 app.put('/update-foto-empleado', async (req, res) => {
     const { id, urlFoto } = req.body;
+    console.log(id)
+    console.log(urlFoto)
 
     try {
         const result = await sql`
@@ -642,7 +644,7 @@ app.put('/update-foto-empleado', async (req, res) => {
         res.send("Foto actualizada");
     } catch (err) {
         console.error('Error al actualizar la foto del empleado', err.stack);
-        res.status(500).send('Error al procesar la imagen');
+        res.status(500).send('Error al procesar la imagen: ' + err);
     }
 });
 
