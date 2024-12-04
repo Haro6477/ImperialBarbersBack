@@ -1393,7 +1393,7 @@ app.get("/descanso/:id", async (req, res) => {
             FROM chequeos 
             WHERE dia = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date AND idBarber = ${id}
         `;
-        res.send(result);
+        res.send(result[0]);
     } catch (err) {
         console.error('Error al obtener descanso', err.stack);
         res.status(500).send("Error al obtener descanso");
