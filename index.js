@@ -316,7 +316,7 @@ app.put("/update-cuenta", async (req, res) => {
 app.get("/empleados", async (req, res) => {
     try {
         const result = await sql`
-            SELECT id, usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, color, municipio 
+            SELECT id, usuario, pass, nombre, telefono, correo, fechaNacimiento, fechaInicio, puesto, estatus, color, municipio, foto 
             FROM empleados 
             WHERE id <> 7 
             ORDER BY nombre
