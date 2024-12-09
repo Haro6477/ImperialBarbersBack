@@ -773,13 +773,14 @@ app.get("/servicio/:id", async (req, res) => {
 app.get("/servicios/search/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
     const text = `%${req.query.text}%`;
+    const similarityScore = 0.25;
 
     try {
         const result = await sql`
             SELECT * FROM servicios 
             WHERE municipio = ${municipio} 
-              AND nombre ILIKE ${text}
-            ORDER BY nombre 
+              AND SIMILARITY(nombre, ${text} > ${similarityScore})
+            ORDER BY SIMILARITY(nombre, ${text}) DESC, nombre 
             LIMIT 7
         `;
         res.send(result);
@@ -792,13 +793,14 @@ app.get("/servicios/search/municipio/:municipio", async (req, res) => {
 app.get("/productos/search/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
     const text = `%${req.query.text}%`;
+    const similarityScore = 0.25;
 
     try {
         const result = await sql`
             SELECT * FROM productos 
             WHERE municipio = ${municipio} 
-              AND (nombre || ' ' || marca || ' ' || linea || ' ' || contenido) ILIKE ${text}
-            ORDER BY nombre 
+              AND SIMILARITY(CONCAT(nombre, marca, linea, contenido), ${text} > ${similarityScore})
+            ORDER BY SIMILARITY(CONCAT(nombre, marca, linea, contenido), ${text}) DESC, nombre 
             LIMIT 7
         `;
         res.send(result);
