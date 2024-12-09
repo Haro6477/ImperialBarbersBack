@@ -830,7 +830,6 @@ app.get("/productos/municipio/:municipio", async (req, res) => {
 
 app.post("/create-producto", async (req, res) => {
     const { nombre, marca, linea, contenido, enventa, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio } = req.body;
-
     try {
         const result = await sql`
             INSERT INTO productos (nombre, marca, linea, contenido, enventa, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio)
@@ -847,7 +846,7 @@ app.post("/create-producto", async (req, res) => {
 
 app.put("/update-producto", async (req, res) => {
     const { id, nombre, marca, linea, contenido, enventa, suministros, almacen, descripcion, costo, precio, pts, imagen } = req.body;
-
+    console.log(id, '\n', nombre,'\n', marca,'\n', linea, '\n',contenido,'\n', enventa,'\n', suministros, '\n',almacen, '\n',descripcion,'\n', costo, '\n',precio,'\n', pts, '\n',imagen)
     try {
         const result = await sql`
             UPDATE productos 
