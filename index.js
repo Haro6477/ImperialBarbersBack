@@ -829,12 +829,12 @@ app.get("/productos/municipio/:municipio", async (req, res) => {
 
 
 app.post("/create-producto", async (req, res) => {
-    const { nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio } = req.body;
+    const { nombre, marca, linea, contenido, enventa, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio } = req.body;
 
     try {
         const result = await sql`
-            INSERT INTO productos (nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio)
-            VALUES (${nombre}, ${marca}, ${linea}, ${contenido}, ${enVenta}, ${suministros}, ${almacen}, ${descripcion}, ${costo}, ${precio}, ${pts}, ${imagen}, ${municipio})
+            INSERT INTO productos (nombre, marca, linea, contenido, enventa, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio)
+            VALUES (${nombre}, ${marca}, ${linea}, ${contenido}, ${enventa}, ${suministros}, ${almacen}, ${descripcion}, ${costo}, ${precio}, ${pts}, ${imagen}, ${municipio})
             RETURNING *
         `;
         res.send(result[0]);
@@ -846,12 +846,12 @@ app.post("/create-producto", async (req, res) => {
 
 
 app.put("/update-producto", async (req, res) => {
-    const { id, nombre, marca, linea, contenido, enVenta, suministros, almacen, descripcion, costo, precio, pts, imagen } = req.body;
+    const { id, nombre, marca, linea, contenido, enventa, suministros, almacen, descripcion, costo, precio, pts, imagen } = req.body;
 
     try {
         const result = await sql`
             UPDATE productos 
-            SET nombre = ${nombre}, marca = ${marca}, linea = ${linea}, contenido = ${contenido}, enVenta = ${enVenta}, 
+            SET nombre = ${nombre}, marca = ${marca}, linea = ${linea}, contenido = ${contenido}, enventa = ${enventa}, 
                 suministros = ${suministros}, almacen = ${almacen}, descripcion = ${descripcion}, costo = ${costo}, 
                 precio = ${precio}, pts = ${pts}, imagen = ${imagen}
             WHERE id = ${id}
@@ -1102,7 +1102,7 @@ app.put("/update-inventario", async (req, res) => {
     try {
         const result = await sql`
             UPDATE productos 
-            SET enVenta = enVenta + ${cantidad}
+            SET enventa = enventa + ${cantidad}
             WHERE id = ${id}
             RETURNING *
         `;
