@@ -799,8 +799,8 @@ app.get("/productos/search/municipio/:municipio", async (req, res) => {
         const result = await sql`
             SELECT * FROM productos 
             WHERE municipio = ${municipio} 
-              AND SIMILARITY(CONCAT(nombre, marca, linea, contenido), ${text}) > ${similarityScore}
-            ORDER BY SIMILARITY(CONCAT(nombre, marca, linea, contenido), ${text}) DESC, nombre 
+              AND SIMILARITY((nombre || ' ' || marca || ' ' || linea || ' ' || contenido), ${text}) > ${similarityScore}
+            ORDER BY SIMILARITY((nombre || ' ' || marca || ' ' || linea || ' ' || contenido), ${text}) DESC, nombre 
             LIMIT 7
         `;
         res.send(result);
@@ -809,6 +809,7 @@ app.get("/productos/search/municipio/:municipio", async (req, res) => {
         res.status(500).send('Error interno del servidor');
     }
 });
+
 
 
 //#region Funciones para los productos
