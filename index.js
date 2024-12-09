@@ -793,7 +793,7 @@ app.get("/servicios/search/municipio/:municipio", async (req, res) => {
 app.get("/productos/search/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
     const text = `%${req.query.text}%`;
-    const similarityScore = 0.25;
+    const similarityScore = 0.12;
 
     try {
         const result = await sql`
