@@ -846,13 +846,12 @@ app.post("/create-producto", async (req, res) => {
 
 app.put("/update-producto", async (req, res) => {
     const { id, nombre, marca, linea, contenido, enventa, suministros, almacen, descripcion, costo, precio, pts, imagen } = req.body;
-    console.log(id, '\n', nombre,'\n', marca,'\n', linea, '\n',contenido,'\n', enventa,'\n', suministros, '\n',almacen, '\n',descripcion,'\n', costo, '\n',precio,'\n', pts, '\n',imagen)
     try {
         const result = await sql`
             UPDATE productos 
             SET nombre = ${nombre}, marca = ${marca}, linea = ${linea}, contenido = ${contenido}, enventa = ${enventa}, 
                 suministros = ${suministros}, almacen = ${almacen}, descripcion = ${descripcion}, costo = ${costo}, 
-                precio = ${precio}, pts = ${pts}, imagen = ${imagen}
+                precio = ${precio}, pts = ${pts}, imagen = ${imagen || null}
             WHERE id = ${id}
             RETURNING *
         `;
