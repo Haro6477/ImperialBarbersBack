@@ -779,7 +779,7 @@ app.get("/servicios/search/municipio/:municipio", async (req, res) => {
         const result = await sql`
             SELECT * FROM servicios 
             WHERE municipio = ${municipio} 
-              AND SIMILARITY(nombre, ${text} > ${similarityScore})
+              AND SIMILARITY(nombre, ${text}) > ${similarityScore}
             ORDER BY SIMILARITY(nombre, ${text}) DESC, nombre 
             LIMIT 7
         `;
@@ -799,7 +799,7 @@ app.get("/productos/search/municipio/:municipio", async (req, res) => {
         const result = await sql`
             SELECT * FROM productos 
             WHERE municipio = ${municipio} 
-              AND SIMILARITY(CONCAT(nombre, marca, linea, contenido), ${text} > ${similarityScore})
+              AND SIMILARITY(CONCAT(nombre, marca, linea, contenido), ${text}) > ${similarityScore}
             ORDER BY SIMILARITY(CONCAT(nombre, marca, linea, contenido), ${text}) DESC, nombre 
             LIMIT 7
         `;
