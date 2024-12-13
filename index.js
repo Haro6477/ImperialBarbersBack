@@ -1149,6 +1149,7 @@ app.get("/movimientos/municipio/:municipio", async (req, res) => {
             FROM movimientos AS m 
             INNER JOIN empleados ON idUsuario = empleados.id 
             WHERE m.fechaHora != CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City' AND m.municipio = ${municipio}
+            LIMIT 30
         `;
         res.send(result);
     } catch (err) {
