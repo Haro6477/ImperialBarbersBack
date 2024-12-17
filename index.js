@@ -449,6 +449,27 @@ app.get("/servicios-semana/:id", async (req, res) => {
     }
 });
 
+app.get("/servicios-hoy/municipio/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
+
+    try {
+        const result = await sql`
+            SELECT ds.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, ds.precioActual, ds.cantidad, s.nombre AS servicio 
+            FROM detallescobroservicios AS ds
+            INNER JOIN cobros AS c ON ds.idCobro = c.id
+            INNER JOIN clientes AS cl ON c.idCliente = cl.id
+            INNER JOIN empleados AS e ON ds.idBarber = e.id
+            INNER JOIN servicios AS s ON ds.idServicio = s.id
+            WHERE DATE(c.fecha) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date AND c.idCliente != '122' AND municipio = ${municipio}
+            ORDER BY c.fecha DESC
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener los servicios de la semana para el barber.");
+    }
+});
+
 app.get("/productos-semana-all/:id", async (req, res) => {
     const id = req.params.id;
     const now = new Date().toLocaleDateString('es-MX', options).split('/').reverse().join('-');
@@ -489,6 +510,27 @@ app.get("/productos-semana", async (req, res) => {
             INNER JOIN empleados AS e ON dp.idBarber = e.id
             INNER JOIN productos AS p ON dp.idProducto = p.id
             WHERE c.fecha >= ${lunes} AND c.idCliente != '122'
+            ORDER BY c.fecha DESC
+        `;
+        res.send(result);
+    } catch (err) {
+        console.error('Error executing query', err.stack);
+        res.status(500).send("Error al obtener los productos de la semana.");
+    }
+});
+
+app.get("/productos-hoy/municipio/:municipio", async (req, res) => {
+    const municipio = req.params.municipio;
+
+    try {
+        const result = await sql`
+            SELECT dp.id, e.nombre AS barber, e.color, e.id AS idBarber, cl.nombre AS cliente, c.fecha, dp.precioActual, dp.cantidad, p.nombre AS producto
+            FROM detallescobroproductos AS dp
+            INNER JOIN cobros AS c ON dp.idCobro = c.id
+            INNER JOIN clientes AS cl ON c.idCliente = cl.id
+            INNER JOIN empleados AS e ON dp.idBarber = e.id
+            INNER JOIN productos AS p ON dp.idProducto = p.id
+            WHERE DATE(c.fecha) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date AND c.idCliente != '122' AND municipio = ${municipio}
             ORDER BY c.fecha DESC
         `;
         res.send(result);
