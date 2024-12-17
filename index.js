@@ -156,7 +156,7 @@ app.get("/clientes/search", async (req, res) => {
             WHERE SIMILARITY(nombre, ${text}) > ${similarityScore} 
               OR telefono ILIKE ${text}
             ORDER BY SIMILARITY(nombre, ${text}) DESC, nombre
-            LIMIT 20
+            LIMIT 8
         `;
         res.send(result);
     } catch (error) {
@@ -996,7 +996,8 @@ app.get("/cobros-hoy/municipio/:municipio", async (req, res) => {
             INNER JOIN clientes AS c ON v.idCliente = c.id
             INNER JOIN empleados AS b ON v.idBarber = b.id
             INNER JOIN empleados AS s ON v.idCobrador = s.id
-            WHERE v.fecha = CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City' AND v.municipio = ${municipio}
+            WHERE DATE(v.fecha AT TIME ZONE 'UTC' AT TIME ZONE 'America/Mexico_City') = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
+            AND v.municipio = ${municipio}
             ORDER BY fecha DESC
         `;
         res.send(result);
@@ -1166,7 +1167,7 @@ app.get("/movimientos-hoy/municipio/:municipio", async (req, res) => {
             SELECT m.id, concepto, cantidad, fechaHora, nombre, m.municipio 
             FROM movimientos AS m 
             INNER JOIN empleados ON idUsuario = empleados.id 
-            WHERE m.fechaHora = CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City' AND m.municipio = ${municipio}
+            WHERE DATE(m.fechaHora) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date AND m.municipio = ${municipio}
         `;
         res.send(result);
     } catch (err) {
@@ -1275,7 +1276,7 @@ app.get("/reporte-hoy/municipio/:municipio", async (req, res) => {
         const result = await sql`
             SELECT id 
             FROM reportes 
-            WHERE fecha = CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City' AND municipio = ${municipio}
+            WHERE DATE(fecha) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date AND municipio = ${municipio}
         `;
         res.send(result[0]);
     } catch (err) {
