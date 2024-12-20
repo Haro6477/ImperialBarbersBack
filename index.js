@@ -1038,7 +1038,7 @@ app.get("/cobros-hoy/municipio/:municipio", async (req, res) => {
             INNER JOIN clientes AS c ON v.idCliente = c.id
             INNER JOIN empleados AS b ON v.idBarber = b.id
             INNER JOIN empleados AS s ON v.idCobrador = s.id
-            WHERE DATE(v.fecha AT TIME ZONE 'UTC' AT TIME ZONE 'America/Mexico_City') = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
+            WHERE DATE(v.fecha) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date
             AND v.municipio = ${municipio}
             ORDER BY fecha DESC
         `;
