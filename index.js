@@ -460,7 +460,7 @@ app.get("/servicios-hoy/municipio/:municipio", async (req, res) => {
             INNER JOIN clientes AS cl ON c.idCliente = cl.id
             INNER JOIN empleados AS e ON ds.idBarber = e.id
             INNER JOIN servicios AS s ON ds.idServicio = s.id
-            WHERE DATE(c.fecha) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date AND c.idCliente != '122' AND municipio = ${municipio}
+            WHERE DATE(c.fecha) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date AND c.idCliente != '122' AND c.municipio = ${municipio}
             ORDER BY c.fecha DESC
         `;
         res.send(result);
@@ -530,7 +530,7 @@ app.get("/productos-hoy/municipio/:municipio", async (req, res) => {
             INNER JOIN clientes AS cl ON c.idCliente = cl.id
             INNER JOIN empleados AS e ON dp.idBarber = e.id
             INNER JOIN productos AS p ON dp.idProducto = p.id
-            WHERE DATE(c.fecha) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date AND c.idCliente != '122' AND municipio = ${municipio}
+            WHERE DATE(c.fecha) = (CURRENT_TIMESTAMP AT TIME ZONE 'America/Mexico_City')::date AND c.idCliente != '122' AND c.municipio = ${municipio}
             ORDER BY c.fecha DESC
         `;
         res.send(result);
