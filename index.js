@@ -815,7 +815,7 @@ app.get("/servicio/:id", async (req, res) => {
 app.get("/servicios/search/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
     const text = `%${req.query.text}%`;
-    const similarityScore = 0.2;
+    const similarityScore = 0.1;
 
     try {
         const result = await sql`
@@ -835,7 +835,7 @@ app.get("/servicios/search/municipio/:municipio", async (req, res) => {
 app.get("/productos/search/municipio/:municipio", async (req, res) => {
     const municipio = req.params.municipio;
     const text = `%${req.query.text}%`;
-    const similarityScore = 0.2;
+    const similarityScore = 0.1;
 
     try {
         const result = await sql`
