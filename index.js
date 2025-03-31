@@ -878,7 +878,7 @@ app.post("/create-producto", async (req, res) => {
     try {
         const result = await sql`
             INSERT INTO productos (nombre, marca, linea, contenido, enventa, suministros, almacen, descripcion, costo, precio, pts, imagen, municipio)
-            VALUES (${nombre}, ${marca}, ${linea}, ${contenido}, ${enventa}, ${suministros}, ${almacen}, ${descripcion}, ${costo}, ${precio}, ${pts}, ${imagen}, ${municipio})
+            VALUES (${nombre}, ${marca}, ${linea}, ${contenido}, ${enventa}, ${suministros}, ${almacen}, ${descripcion}, ${costo}, ${precio}, ${pts}, ${imagen || null}, ${municipio})
             RETURNING *
         `;
         res.send(result[0]);
